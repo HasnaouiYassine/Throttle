@@ -1,53 +1,212 @@
-import { AlertTriangle, Plus } from 'lucide-react'
-import { items } from '../data/mockData'
+import React, { useState, useMemo } from 'react';
+import { items, categories } from '../data/mockData';
+import { Search, Plus, Bell, Settings, Filter, MoreVertical, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
 export default function Inventory() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('ALL');
+  const [lowStockOnly, setLowStockOnly] = useState(false);
+
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            item.sku.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = activeCategory === 'ALL' || item.category === activeCategory;
+      const matchesLowStock = !lowStockOnly || (item.stock <= (item.lowStockAt || 5) && item.stock > 0); 
+      return matchesSearch && matchesCategory && matchesLowStock;
+    });
+  }, [searchQuery, activeCategory, lowStockOnly]);
+
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl">Inventory</h2>
-          <p className="text-sm text-text-muted mt-1">{items.length} items across all categories</p>
+    <div className="h-full flex flex-col bg-bg overflow-hidden text-text">
+      {/* HEADER BAR */}
+      <header className="bg-surface-container border-b-2 border-border-warm h-20 px-6 shrink-0 flex justify-between items-center">
+        <h1 className="font-sans text-[32px] font-bold text-text uppercase tracking-tight">
+          INVENTORY MANAGEMENT
+        </h1>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted w-5 h-5" />
+            <input 
+              type="text" 
+              placeholder="SCAN BARCODE OR SEARCH..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64 h-12 bg-surface border border-border-warm text-text font-mono pl-10 pr-4 placeholder:text-text-muted focus:outline-none focus:border-accent"
+            />
+          </div>
+          <button className="w-12 h-12 flex items-center justify-center bg-surface border border-border-warm hover:border-accent transition-colors">
+            <Bell className="w-5 h-5 text-text-warm" />
+          </button>
+          <button className="w-12 h-12 flex items-center justify-center bg-surface border border-border-warm hover:border-accent transition-colors">
+            <Settings className="w-5 h-5 text-text-warm" />
+          </button>
+          <button className="bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase h-12 px-6 flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" />
+            ADD NEW ITEM
+          </button>
         </div>
-        <button className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-md">
-          <Plus size={16} /> Add item
-        </button>
+      </header>
+
+      {/* FILTER BAR */}
+      <div className="bg-surface-container p-4 border border-border-warm shrink-0 flex justify-between items-center m-4 mb-0">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveCategory('ALL')}
+            className={`h-10 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
+              activeCategory === 'ALL'
+                ? 'border-2 border-accent text-accent bg-surface-high'
+                : 'border border-border-warm text-text-warm hover:border-border-outline'
+            }`}
+          >
+            ALL
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id || cat.name}
+              onClick={() => setActiveCategory(cat.name)}
+              className={`h-10 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
+                activeCategory === cat.name
+                  ? 'border-2 border-accent text-accent bg-surface-high'
+                  : 'border border-border-warm text-text-warm hover:border-border-outline'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-6 pl-6 shrink-0">
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              checked={lowStockOnly}
+              onChange={(e) => setLowStockOnly(e.target.checked)}
+              className="w-5 h-5 accent-accent cursor-pointer border-border-warm bg-surface"
+            />
+            <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm group-hover:text-text transition-colors">
+              SHOW LOW STOCK ONLY
+            </span>
+          </label>
+          <div className="w-px h-6 bg-border-warm" />
+          <button className="flex items-center gap-2 h-10 px-4 border border-border-warm text-text-warm font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:text-text hover:border-border-outline transition-colors">
+            <Filter className="w-4 h-4" />
+            MORE FILTERS
+          </button>
+        </div>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface text-text-muted text-xs uppercase tracking-wide">
-              <th className="text-left font-medium px-4 py-3">Item</th>
-              <th className="text-left font-medium px-4 py-3">Category</th>
-              <th className="text-left font-medium px-4 py-3">Variant</th>
-              <th className="text-right font-medium px-4 py-3">Cost</th>
-              <th className="text-right font-medium px-4 py-3">Price</th>
-              <th className="text-right font-medium px-4 py-3">Stock</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => {
-              const low = item.stock <= item.lowStockAt
-              return (
-                <tr key={item.id} className="border-t border-border hover:bg-surface/60">
-                  <td className="px-4 py-3 font-medium">{item.name}</td>
-                  <td className="px-4 py-3 text-text-muted">{item.category}</td>
-                  <td className="px-4 py-3 text-text-muted">{item.variant}</td>
-                  <td className="px-4 py-3 text-right text-text-muted">{item.cost} DT</td>
-                  <td className="px-4 py-3 text-right">{item.price} DT</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className={`inline-flex items-center gap-1 font-medium ${low ? 'text-warning' : 'text-text'}`}>
-                      {low && <AlertTriangle size={13} />}
+      {/* TABLE */}
+      <div className="flex-1 bg-surface border border-border-warm overflow-hidden flex flex-col m-4 mt-4">
+        {/* Header row */}
+        <div className="grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] gap-4 p-4 bg-surface-high border-b-2 border-border-warm shrink-0">
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">IMG</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">ITEM NAME & SKU</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">CATEGORY</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">SIZE / COLOR</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">STOCK</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">COST</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">SALE PRICE</div>
+          <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm text-center">ACTS</div>
+        </div>
+        
+        {/* Body rows */}
+        <div className="flex-1 overflow-y-auto">
+          {filteredItems.map(item => {
+            const isOutOfStock = item.stock === 0;
+            const isLowStock = !isOutOfStock && item.stock <= (item.lowStockAt || 5);
+            
+            return (
+              <div 
+                key={item.id} 
+                className={`grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-low transition-colors ${isOutOfStock ? 'opacity-60' : ''}`}
+              >
+                <div>
+                  <div className="w-12 h-12 bg-surface-variant border border-border-warm overflow-hidden">
+                    {item.image && <img src={item.image} alt={item.name} className="w-full h-full object-cover" />}
+                  </div>
+                </div>
+                
+                <div className="min-w-0">
+                  <div className="font-semibold truncate hover:text-accent-light cursor-pointer transition-colors" title={item.name}>
+                    {item.name}
+                  </div>
+                  <div className="font-mono text-[14px] text-text-warm truncate mt-1">
+                    {item.sku}
+                  </div>
+                </div>
+                
+                <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm truncate">
+                  {item.category}
+                </div>
+                
+                <div className="font-mono text-[14px] text-text-faint">
+                  {item.size && <div className="truncate">Sz: {item.size}</div>}
+                  {item.color && <div className="truncate">Col: {item.color}</div>}
+                  {!item.size && !item.color && '-'}
+                </div>
+                
+                <div>
+                  {isOutOfStock ? (
+                    <div className="flex flex-col items-start">
+                      <span className="font-mono text-lg font-bold text-danger">0</span>
+                      <span className="bg-danger text-white font-mono text-[10px] font-bold px-1 mt-1 rounded-sm tracking-wider">
+                        OUT OF STOCK
+                      </span>
+                    </div>
+                  ) : isLowStock ? (
+                    <div className="flex flex-col items-start">
+                      <span className="font-mono text-lg font-bold text-accent-container">{item.stock}</span>
+                      <span className="bg-accent-container text-[#572000] font-mono text-[10px] font-bold px-1 mt-1 rounded-sm tracking-wider flex items-center gap-1">
+                        LOW STOCK
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="font-mono text-lg font-bold">
                       {item.stock}
-                    </span>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="font-mono text-text-warm">
+                  {item.cost ? `${item.cost.toFixed(2)} DT` : '-'}
+                </div>
+                
+                <div className="font-mono font-bold text-lg">
+                  {item.price.toFixed(2)} DT
+                </div>
+                
+                <div className="flex justify-center">
+                  <button className="w-10 h-10 flex items-center justify-center hover:bg-surface-variant hover:text-accent transition-colors rounded-sm text-text-muted">
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {filteredItems.length === 0 && (
+            <div className="p-8 text-center font-mono text-text-warm">
+              NO ITEMS FOUND MATCHING YOUR FILTERS.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* PAGINATION FOOTER */}
+      <div className="p-4 border-t-2 border-border-warm bg-surface-high flex justify-between items-center shrink-0">
+        <div className="font-mono text-[14px] text-text-warm">
+          Showing 1 - {filteredItems.length} of {filteredItems.length} Items
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="h-10 px-4 border border-border-warm bg-surface font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:border-border-outline hover:text-accent transition-colors flex items-center gap-1">
+            <ChevronLeft className="w-4 h-4" />
+            PREV
+          </button>
+          <button className="h-10 px-4 border border-border-warm bg-surface font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:border-border-outline hover:text-accent transition-colors flex items-center gap-1">
+            NEXT
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,21 +1,31 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
 
 @theme {
   --font-display: 'Oswald', sans-serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --color-bg: #121316;
   --color-surface: #1b1d22;
   --color-surface-2: #23262c;
+  --color-surface-high: #2a2a2a;
+  --color-surface-low: #1c1b1b;
+  --color-surface-container: #201f1f;
+  --color-surface-variant: #353534;
   --color-border: #2e3138;
+  --color-border-warm: #5a4136;
+  --color-border-outline: #a98a7d;
 
   --color-text: #edeef1;
   --color-text-muted: #8b909b;
   --color-text-faint: #5c616c;
+  --color-text-warm: #e2bfb0;
 
   --color-accent: #ff5a1f;
   --color-accent-dim: #7a2c10;
+  --color-accent-light: #ffb693;
+  --color-accent-container: #ff6b00;
   --color-warning: #f5a623;
   --color-danger: #e5484d;
   --color-success: #3fb27f;
@@ -38,3 +48,9 @@ h1, h2, h3, .font-display {
   background: var(--color-accent);
   color: #fff;
 }
+
+/* Industrial scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-surface-variant); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-warm); }

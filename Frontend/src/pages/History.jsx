@@ -1,47 +1,297 @@
-import { useState, useMemo } from 'react'
-import { Search } from 'lucide-react'
-import { sales, items } from '../data/mockData'
+import React, { useState, useEffect } from 'react';
+import {
+  Search,
+  Settings,
+  Bell,
+  User,
+  Download,
+  ChevronRight,
+  ChevronLeft,
+  CreditCard,
+  Banknote,
+  Building2,
+  X,
+  Printer,
+  RotateCcw,
+  Receipt
+} from 'lucide-react';
+import { sales, items } from '../data/mockData';
 
-export default function History() {
-  const [query, setQuery] = useState('')
+const History = () => {
+  const [selectedSale, setSelectedSale] = useState(null);
 
-  const filtered = useMemo(() => {
-    return sales.filter((s) =>
-      s.lines.some((l) =>
-        items.find((it) => it.id === l.itemId)?.name.toLowerCase().includes(query.toLowerCase())
-      )
-    )
-  }, [query])
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setSelectedSale(null);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  const formatTimestamp = (ts) => {
+    const date = new Date(ts);
+    return {
+      date: date.toLocaleDateString(),
+      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  };
 
   return (
-    <div className="p-8 max-w-5xl">
-      <h2 className="text-2xl mb-4">Sales history</h2>
-
-      <div className="relative mb-5 max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by item…"
-          className="w-full bg-surface border border-border rounded-md pl-9 pr-3 py-2.5 text-sm outline-none focus:border-accent"
-        />
-      </div>
-
-      <div className="space-y-2">
-        {filtered.map((sale) => (
-          <div key={sale.id} className="bg-surface border border-border rounded-lg px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">
-                {sale.lines.map((l) => items.find((it) => it.id === l.itemId)?.name).join(', ')}
-              </p>
-              <p className="text-xs text-text-faint mt-0.5">
-                {new Date(sale.timestamp).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
-              </p>
-            </div>
-            <span className="font-display text-lg">{sale.total} DT</span>
+    <div className="flex flex-col h-screen bg-bg text-text overflow-hidden">
+      {/* HEADER BAR */}
+      <header className="bg-surface-container border-b-2 border-border-warm h-12 px-6 flex justify-between items-center sticky top-0 z-10 shrink-0">
+        <div className="font-sans text-[24px] font-black text-accent-light uppercase">
+          SALES HISTORY
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-warm" />
+            <input
+              type="text"
+              placeholder="QUICK LOCATE TXN..."
+              className="w-64 pl-10 pr-4 h-12 bg-surface border border-border-warm font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text placeholder-text-warm focus:outline-none focus:border-accent"
+            />
           </div>
-        ))}
-      </div>
+          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+            <Settings className="w-5 h-5" />
+          </button>
+          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+            <Bell className="w-5 h-5" />
+          </button>
+          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+            <User className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto pb-6">
+        {/* FILTER BAR */}
+        <div className="flex gap-4 mb-8 items-end p-6 pt-6">
+          <div className="flex flex-col gap-2">
+            <label className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
+              DATE RANGE
+            </label>
+            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent">
+              <option>TODAY</option>
+              <option>YESTERDAY</option>
+              <option>LAST 7 DAYS</option>
+              <option>THIS MONTH</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
+              PAYMENT TYPE
+            </label>
+            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent">
+              <option>ALL METHODS</option>
+              <option>CARD</option>
+              <option>CASH</option>
+              <option>FINANCING</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2 flex-1">
+            <label className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
+              SCAN / SEARCH
+            </label>
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-warm" />
+              <input
+                type="text"
+                placeholder="SCAN RECEIPT OR ENTER ID..."
+                className="w-full pl-12 pr-4 h-12 bg-surface border-2 border-border-warm font-mono text-[14px] text-text placeholder-text-warm focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+
+          <button className="flex items-center gap-2 border-2 border-border-warm bg-surface h-12 px-6 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:bg-surface-variant transition-colors text-text">
+            <Download className="w-4 h-4" />
+            EXPORT CSV
+          </button>
+        </div>
+
+        {/* TRANSACTIONS TABLE */}
+        <div className="bg-surface border-2 border-border-warm mx-6">
+          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 p-4 bg-surface-high border-b-2 border-border-warm">
+            <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">DATE / TIME</div>
+            <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">SALE ID</div>
+            <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm text-center">ITEMS</div>
+            <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm text-right">TOTAL</div>
+            <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">METHOD</div>
+            <div className="w-8"></div>
+          </div>
+
+          {sales.map((sale) => {
+            const { date, time } = formatTimestamp(sale.timestamp);
+            return (
+              <div
+                key={sale.id}
+                onClick={() => setSelectedSale(sale)}
+                className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 p-4 border-b border-border-warm hover:bg-surface-variant border-l-4 border-l-transparent hover:border-l-accent transition-all cursor-pointer group items-center"
+              >
+                <div>
+                  <div className="font-mono text-[14px] text-text">{date}</div>
+                  <div className="text-text-warm text-xs mt-1">{time}</div>
+                </div>
+                <div className="font-mono text-[14px] font-bold text-accent-light">
+                  {sale.txnId}
+                </div>
+                <div className="font-mono text-[14px] text-center">
+                  {sale.lines.length}
+                </div>
+                <div className="font-mono text-[14px] text-right">
+                  {sale.total.toFixed(2)} DT
+                </div>
+                <div>
+                  <div className="bg-surface-high border border-border-warm text-text font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-2 py-1 inline-flex items-center gap-1">
+                    {sale.paymentMethod === 'Card' && <CreditCard className="w-3.5 h-3.5" />}
+                    {sale.paymentMethod === 'Cash' && <Banknote className="w-3.5 h-3.5" />}
+                    {sale.paymentMethod === 'Financing' && <Building2 className="w-3.5 h-3.5" />}
+                    <span>{sale.paymentDetail || sale.paymentMethod.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div className="w-8 flex justify-center text-text-warm group-hover:text-accent-light transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-between items-center mt-4 mx-6 mb-6">
+          <div className="font-mono text-[14px] text-text-warm">
+            Showing 1-{sales.length} of {sales.length} records
+          </div>
+          <div className="flex gap-2">
+            <button className="h-10 px-4 border border-border-warm bg-surface font-mono text-[12px] font-bold tracking-[0.1em] uppercase flex items-center gap-2 opacity-50 cursor-not-allowed">
+              <ChevronLeft className="w-4 h-4" />
+              PREV
+            </button>
+            <button className="h-10 px-4 border border-border-warm bg-surface font-mono text-[12px] font-bold tracking-[0.1em] uppercase flex items-center gap-2 hover:bg-surface-variant transition-colors">
+              NEXT
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </main>
+
+      {/* RECEIPT PANEL */}
+      {selectedSale && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex justify-end">
+          <div 
+            className="absolute inset-0 z-0" 
+            onClick={() => setSelectedSale(null)} 
+          />
+          <div className="w-full max-w-md bg-surface h-full border-l-2 border-accent flex flex-col z-10 relative">
+            <div className="bg-surface-container p-4 border-b-2 border-border-warm flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <Receipt className="w-6 h-6 text-accent-light" />
+                <h2 className="font-sans text-[24px] font-semibold text-text uppercase tracking-tight">
+                  Transaction Details
+                </h2>
+              </div>
+              <button 
+                onClick={() => setSelectedSale(null)}
+                className="w-12 h-12 flex items-center justify-center text-text-warm hover:text-accent-light transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 font-mono text-[14px]">
+              {/* Meta Section */}
+              <div className="border-b-2 border-dashed border-border-warm pb-6 mb-8 flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <span className="text-text-warm">Sale ID:</span>
+                  <span className="text-accent-light font-bold">{selectedSale.txnId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-warm">Date/Time:</span>
+                  <span className="text-text">
+                    {formatTimestamp(selectedSale.timestamp).date} {formatTimestamp(selectedSale.timestamp).time}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-warm">Operator:</span>
+                  <span className="text-text">Shop Operator</span>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="mb-8">
+                <div className="flex justify-between font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm border-b border-border-warm pb-2 mb-4">
+                  <span>ITEM</span>
+                  <span>TOTAL</span>
+                </div>
+                <div className="flex flex-col gap-4">
+                  {selectedSale.lines.map((line, idx) => {
+                    const item = items.find(i => i.id === line.itemId) || {};
+                    return (
+                      <div key={idx} className="flex flex-col">
+                        <div className="flex justify-between">
+                          <span className="font-bold text-text truncate max-w-[200px]" title={item.name}>{item.name || 'Unknown Item'}</span>
+                          <span className="text-text">{(line.qty * line.price).toFixed(2)}</span>
+                        </div>
+                        <div className="text-text-warm text-xs mt-1">
+                          {item.sku} &middot; {line.qty} x {line.price.toFixed(2)} DT
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="border-t-2 border-dashed border-border-warm pt-6 mb-8 flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <span className="text-text-warm">Subtotal</span>
+                  <span className="text-text">{(selectedSale.total / 1.08).toFixed(2)} DT</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-warm">Tax (8%)</span>
+                  <span className="text-text">{(selectedSale.total - (selectedSale.total / 1.08)).toFixed(2)} DT</span>
+                </div>
+                <div className="flex justify-between items-end mt-4">
+                  <span className="text-text-warm mb-2 font-bold">TOTAL</span>
+                  <span className="font-sans text-[48px] font-bold text-accent leading-[48px]">
+                    {selectedSale.total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Box */}
+              <div className="bg-surface-container p-4 border border-border-warm">
+                <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
+                  Payment Method
+                </div>
+                <div className="flex items-center gap-2 font-bold text-text">
+                  {selectedSale.paymentMethod === 'Card' && <CreditCard className="w-5 h-5" />}
+                  {selectedSale.paymentMethod === 'Cash' && <Banknote className="w-5 h-5" />}
+                  {selectedSale.paymentMethod === 'Financing' && <Building2 className="w-5 h-5" />}
+                  <span>{selectedSale.paymentDetail || selectedSale.paymentMethod.toUpperCase()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-surface-container border-t-2 border-border-warm grid grid-cols-2 gap-4 shrink-0">
+              <button className="bg-surface border-2 border-border-warm text-text font-mono text-[12px] font-bold tracking-[0.1em] uppercase h-12 flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors">
+                <Printer className="w-4 h-4" />
+                REPRINT
+              </button>
+              <button className="bg-surface border-2 border-danger text-danger font-mono text-[12px] font-bold tracking-[0.1em] uppercase h-12 flex items-center justify-center gap-2 hover:bg-danger/10 transition-colors">
+                <RotateCcw className="w-4 h-4" />
+                VOID / RETURN
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
+
+export default History;

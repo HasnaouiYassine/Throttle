@@ -2,7 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { Gauge, ShoppingCart, Package, Truck, History } from 'lucide-react'
 
 const navItems = [
-  { to: '/', label: 'Sale', icon: ShoppingCart, end: true },
+  { to: '/', label: 'POS', icon: ShoppingCart, end: true },
   { to: '/inventory', label: 'Inventory', icon: Package },
   { to: '/suppliers', label: 'Suppliers', icon: Truck },
   { to: '/history', label: 'History', icon: History },
@@ -12,34 +12,48 @@ const navItems = [
 export default function Layout() {
   return (
     <div className="min-h-screen flex bg-bg text-text">
-      <aside className="w-56 shrink-0 border-r border-border flex flex-col">
-        <div className="px-5 py-6 border-b border-border">
-          <h1 className="font-display text-2xl tracking-wide">
+      <aside className="w-64 shrink-0 border-r-2 border-border-warm bg-surface flex flex-col">
+        {/* Brand */}
+        <div className="px-6 py-6 mb-2">
+          <h1 className="font-sans text-2xl font-black text-accent-light uppercase tracking-tighter">
             THROTTLE
           </h1>
-          <p className="text-xs text-text-faint mt-1">Shop console</p>
+          <p className="font-mono text-[12px] font-bold tracking-[0.1em] text-text-warm mt-1 uppercase">
+            SHOP POS V1.0
+          </p>
         </div>
-        <nav className="flex-1 py-4">
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 flex flex-col gap-1">
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors border-l-2 ${
+                `flex items-center gap-4 px-4 py-3 min-h-[48px] font-mono text-[12px] font-bold tracking-[0.1em] uppercase transition-all duration-75 ${
                   isActive
-                    ? 'border-accent text-text bg-surface'
-                    : 'border-transparent text-text-muted hover:text-text hover:bg-surface/60'
+                    ? 'bg-accent-container text-[#572000] border-2 border-accent scale-[0.98]'
+                    : 'text-text-warm hover:bg-surface-variant border-2 border-transparent'
                 }`
               }
             >
-              <Icon size={18} strokeWidth={2} />
+              <Icon size={20} strokeWidth={2} />
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-border text-xs text-text-faint">
-          v0.1 — Web
+
+        {/* Footer */}
+        <div className="px-4 py-4 mt-auto border-t-2 border-border-warm">
+          <div className="flex items-center gap-3 px-2 py-2">
+            <div className="w-10 h-10 bg-surface-variant border border-border-warm flex items-center justify-center">
+              <ShoppingCart size={18} className="text-text-warm" />
+            </div>
+            <span className="font-mono text-[14px] font-medium text-text-muted">
+              Shop Operator
+            </span>
+          </div>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">

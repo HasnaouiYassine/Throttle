@@ -1,76 +1,210 @@
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts'
-import { TrendingUp, DollarSign, Package, Clock } from 'lucide-react'
-import { revenueTrend, peakHours, sales, items } from '../data/mockData'
+import { useMemo } from 'react'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import { sales, items, revenueTrend, heatmapData, topSellers, slowMovers } from '../data/mockData'
 
-function Stat({ icon: Icon, label, value }) {
-  return (
-    <div className="bg-surface border border-border rounded-lg p-4 flex items-start gap-3">
-      <div className="bg-accent/15 text-accent rounded-md p-2">
-        <Icon size={18} />
+const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+function getIntensityClass(value) {
+  if (value <= 2) return 'bg-surface-variant'
+  if (value <= 4) return 'bg-accent-container/30'
+  if (value <= 6) return 'bg-accent-container/60'
+  if (value <= 8) return 'bg-accent-container/90'
+  return 'bg-accent border border-text'
+}
+
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-surface border border-border-warm p-2">
+        <p className="font-mono text-[12px] text-text-muted">{label}</p>
+        <p className="font-mono text-[14px] text-text font-bold">{payload[0].value} DT</p>
       </div>
-      <div>
-        <p className="text-xs text-text-muted">{label}</p>
-        <p className="text-xl font-display mt-0.5">{value}</p>
-      </div>
-    </div>
-  )
+    )
+  }
+  return null
 }
 
 export default function Dashboard() {
-  const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0)
-  const avgTicket = Math.round(totalRevenue / sales.length)
-  const totalCost = sales.reduce(
-    (sum, s) => sum + s.lines.reduce((lsum, l) => {
-      const item = items.find((it) => it.id === l.itemId)
-      return lsum + (item?.cost ?? 0) * l.qty
-    }, 0),
-    0
-  )
-  const margin = totalRevenue - totalCost
+  const totalRevenue = useMemo(() => sales.reduce((sum, s) => sum + s.total, 0), [])
 
-  const itemCounts = {}
-  sales.forEach((s) => s.lines.forEach((l) => {
-    itemCounts[l.itemId] = (itemCounts[l.itemId] || 0) + l.qty
-  }))
-  const topItemId = Object.entries(itemCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
-  const topItem = items.find((it) => it.id === Number(topItemId))
+  const avgTicket = useMemo(() => {
+    if (sales.length === 0) return 0
+    return Math.round(totalRevenue / sales.length)
+  }, [totalRevenue])
+
+  const totalCost = useMemo(() => {
+    return sales.reduce((sum, s) =>
+      sum + s.lines.reduce((lsum, l) => {
+        const item = items.find(it => it.id === l.itemId)
+        return lsum + (item?.cost ?? 0) * l.qty
+      }, 0),
+    0)
+  }, [])
+
+  const margin = totalRevenue - totalCost
+  const marginPct = totalRevenue > 0 ? ((margin / totalRevenue) * 100).toFixed(1) : '0.0'
 
   return (
-    <div className="p-8 max-w-6xl">
-      <h2 className="text-2xl mb-6">Dashboard</h2>
-
-      <div className="grid grid-cols-4 gap-3 mb-8">
-        <Stat icon={DollarSign} label="Revenue (period)" value={`${totalRevenue} DT`} />
-        <Stat icon={TrendingUp} label="Profit margin" value={`${margin} DT`} />
-        <Stat icon={Package} label="Top item" value={topItem?.name ?? '—'} />
-        <Stat icon={Clock} label="Avg. transaction" value={`${avgTicket} DT`} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-surface border border-border rounded-lg p-5">
-          <h3 className="text-sm font-medium text-text-muted mb-4">Revenue this week</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={revenueTrend}>
-              <CartesianGrid stroke="#2e3138" vertical={false} />
-              <XAxis dataKey="day" stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ background: '#1b1d22', border: '1px solid #2e3138', borderRadius: 6 }} />
-              <Line type="monotone" dataKey="revenue" stroke="#ff5a1f" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+    <div className="flex flex-col h-screen overflow-auto">
+      {/* METRIC CARDS */}
+      <div className="grid grid-cols-3 gap-4 p-6 pb-4">
+        {/* Total Revenue */}
+        <div className="bg-surface border border-border-warm p-4 flex flex-col">
+          <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
+            Total Revenue
+          </span>
+          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+            {totalRevenue.toLocaleString()} DT
+          </span>
+          <span className="font-mono text-[14px] text-accent-light flex items-center gap-1 mt-2">
+            <TrendingUp size={14} /> +12.5% vs Last Week
+          </span>
         </div>
 
-        <div className="bg-surface border border-border rounded-lg p-5">
-          <h3 className="text-sm font-medium text-text-muted mb-4">Peak hours</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={peakHours}>
-              <CartesianGrid stroke="#2e3138" vertical={false} />
-              <XAxis dataKey="hour" stroke="#5c616c" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ background: '#1b1d22', border: '1px solid #2e3138', borderRadius: 6 }} />
-              <Bar dataKey="sales" fill="#ff5a1f" radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Avg Transaction */}
+        <div className="bg-surface border border-border-warm p-4 flex flex-col">
+          <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
+            Avg Transaction Value
+          </span>
+          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+            {avgTicket} DT
+          </span>
+          <span className="font-mono text-[14px] text-text-warm flex items-center gap-1 mt-2">
+            <ArrowRight size={14} /> 0.0% vs Last Week
+          </span>
+        </div>
+
+        {/* Gross Profit Margin */}
+        <div className="bg-surface border border-border-warm p-4 flex flex-col">
+          <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
+            Gross Profit Margin
+          </span>
+          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+            {marginPct}%
+          </span>
+          <span className="font-mono text-[14px] text-danger flex items-center gap-1 mt-2">
+            <TrendingDown size={14} /> -2.1% vs Last Week
+          </span>
+        </div>
+      </div>
+
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-12 gap-4 px-6 pb-6 flex-1 min-h-0">
+        {/* LEFT: Charts */}
+        <div className="col-span-8 flex flex-col gap-4">
+          {/* Revenue Trend */}
+          <div className="bg-surface border border-border-warm p-4 h-64 flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
+                Revenue Trend (30 Days)
+              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-accent rounded-full" />
+                <span className="font-mono text-[12px] text-text-muted">Gross</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueTrend} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ff6b00" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#ff6b00" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#5a4136" vertical={false} />
+                  <XAxis dataKey="day" stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="revenue" stroke="#ff5a1f" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Peak Activity Heatmap */}
+          <div className="bg-surface border border-border-warm p-4 flex-1 flex flex-col min-h-[280px]">
+            <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-4">
+              Peak Activity (Heatmap)
+            </span>
+            <div className="flex-1">
+              <div className="grid grid-cols-8 gap-1 h-full">
+                {/* Rows: each time slot */}
+                {heatmapData.map((row) => (
+                  <div key={row.time} className="contents">
+                    {/* Time label */}
+                    <div className="font-mono text-[12px] text-text-muted flex items-center justify-end pr-2">
+                      {row.time}
+                    </div>
+                    {/* Day cells */}
+                    {days.map((day) => (
+                      <div key={`${row.time}-${day}`} className="p-[1px]">
+                        <div className={`w-full h-8 ${getIntensityClass(row[day])} transition-colors`} />
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                {/* Day labels row */}
+                <div /> {/* empty cell under time labels */}
+                {days.map((day) => (
+                  <div
+                    key={`label-${day}`}
+                    className={`font-mono text-[12px] font-bold tracking-[0.1em] text-center uppercase pt-2 ${
+                      day === 'Sat' ? 'text-accent-light' : 'text-text-muted'
+                    }`}
+                  >
+                    {day.toUpperCase()}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: Lists */}
+        <div className="col-span-4 flex flex-col gap-4">
+          {/* Top 5 Best-Sellers */}
+          <div className="bg-surface border border-border-warm p-4 flex-1 overflow-auto">
+            <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-accent-light mb-4 block">
+              Top 5 Best-Sellers (MTD)
+            </span>
+            <div className="flex flex-col gap-3">
+              {topSellers.map((item, idx) => (
+                <div
+                  key={item.sku}
+                  className={`flex justify-between items-center pb-2 ${idx < topSellers.length - 1 ? 'border-b border-surface-variant' : ''}`}
+                >
+                  <div>
+                    <span className="font-sans text-[16px] text-text block">{item.name}</span>
+                    <span className="font-mono text-xs text-text-warm">SKU: {item.sku}</span>
+                  </div>
+                  <span className="font-mono text-[14px] font-bold text-text">{item.sold}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top 5 Slow-Movers */}
+          <div className="bg-surface border border-border-warm p-4 flex-1 overflow-auto">
+            <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-danger mb-4 block">
+              Top 5 Slow-Movers
+            </span>
+            <div className="flex flex-col gap-3">
+              {slowMovers.map((item, idx) => (
+                <div
+                  key={item.sku}
+                  className={`flex justify-between items-center pb-2 ${idx < slowMovers.length - 1 ? 'border-b border-surface-variant' : ''}`}
+                >
+                  <div>
+                    <span className="font-sans text-[16px] text-text block">{item.name}</span>
+                    <span className="font-mono text-xs text-text-warm">SKU: {item.sku}</span>
+                  </div>
+                  <span className="font-mono text-[14px] font-bold text-text">{item.sold}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

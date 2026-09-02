@@ -1,150 +1,228 @@
-import { useState, useMemo } from 'react'
-import { Plus, Minus, Trash2, Search } from 'lucide-react'
-import { items, categories } from '../data/mockData'
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, Minus, Trash2, Search, ShoppingCart } from 'lucide-react';
+import { items, categories } from '../data/mockData';
 
 export default function Sale() {
-  const [cart, setCart] = useState([])
-  const [query, setQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All Gear');
+  const [cart, setCart] = useState([]);
+  const [txnId, setTxnId] = useState('');
 
-  const filtered = useMemo(() => {
-    return items.filter((it) => {
-      const matchesCategory = activeCategory === 'All' || it.category === activeCategory
-      const matchesQuery = it.name.toLowerCase().includes(query.toLowerCase())
-      return matchesCategory && matchesQuery
-    })
-  }, [query, activeCategory])
+  useEffect(() => {
+    // Generate TXN-XXXXX-X
+    const generateId = () => {
+      const p1 = Math.floor(10000 + Math.random() * 90000);
+      const p2 = Math.floor(1 + Math.random() * 9);
+      return `TXN-${p1}-${p2}`;
+    };
+    setTxnId(generateId());
+  }, []);
 
-  function addToCart(item) {
-    setCart((prev) => {
-      const existing = prev.find((l) => l.id === item.id)
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      const matchesCategory = selectedCategory === 'All Gear' || item.category === selectedCategory;
+      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
+                            item.sku.toLowerCase().includes(search.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [search, selectedCategory]);
+
+  const addToCart = (item) => {
+    if (item.stock === 0) return;
+    setCart(prev => {
+      const existing = prev.find(line => line.item.id === item.id);
       if (existing) {
-        return prev.map((l) => (l.id === item.id ? { ...l, qty: l.qty + 1 } : l))
+        return prev.map(line => 
+          line.item.id === item.id 
+            ? { ...line, qty: Math.min(line.qty + 1, item.stock) } 
+            : line
+        );
       }
-      return [...prev, { ...item, qty: 1 }]
-    })
-  }
+      return [...prev, { item, qty: 1 }];
+    });
+  };
 
-  function changeQty(id, delta) {
-    setCart((prev) =>
-      prev
-        .map((l) => (l.id === id ? { ...l, qty: l.qty + delta } : l))
-        .filter((l) => l.qty > 0)
-    )
-  }
+  const changeQty = (itemId, delta) => {
+    setCart(prev => {
+      return prev.map(line => {
+        if (line.item.id === itemId) {
+          const newQty = line.qty + delta;
+          if (newQty <= 0) return null;
+          return { ...line, qty: Math.min(newQty, line.item.stock) };
+        }
+        return line;
+      }).filter(Boolean);
+    });
+  };
 
-  function removeLine(id) {
-    setCart((prev) => prev.filter((l) => l.id !== id))
-  }
-
-  const total = cart.reduce((sum, l) => sum + l.qty * l.price, 0)
+  const subtotal = cart.reduce((sum, line) => sum + (line.item.price * line.qty), 0);
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
 
   return (
-    <div className="flex h-screen">
-      {/* Item picker */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <h2 className="text-2xl mb-4">New sale</h2>
-
-        <div className="flex items-center gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+    <div className="flex h-screen w-full bg-bg text-text font-sans overflow-hidden">
+      {/* LEFT PANEL */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Top bar */}
+        <div className="flex items-center justify-between p-6 border-b border-border-warm bg-surface shrink-0">
+          <h1 className="text-[32px] font-bold">Categories</h1>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search items…"
-              className="w-full bg-surface border border-border rounded-md pl-9 pr-3 py-2.5 text-sm outline-none focus:border-accent"
+              type="text"
+              placeholder="Search SKU or Product..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="min-h-[48px] w-72 pl-12 pr-4 bg-surface-variant border border-border-warm rounded-none text-text focus:outline-none focus:border-accent font-mono placeholder:text-text-muted"
             />
           </div>
         </div>
 
-        <div className="flex gap-2 mb-5 flex-wrap">
-          {['All', ...categories].map((c) => (
-            <button
-              key={c}
-              onClick={() => setActiveCategory(c)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                activeCategory === c
-                  ? 'bg-accent border-accent text-white'
-                  : 'border-border text-text-muted hover:text-text'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+        {/* Category Filter Chips */}
+        <div className="flex items-center gap-3 p-6 overflow-x-auto shrink-0 border-b border-border-warm bg-surface-low">
+          {['All Gear', ...categories.map(c => c.name)].map(cat => {
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`min-h-[48px] px-6 font-mono text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
+                  isActive
+                    ? 'bg-accent text-white border-2 border-accent'
+                    : 'bg-surface border border-border-warm text-text-warm hover:border-border-outline'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
-          {filtered.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => addToCart(item)}
-              disabled={item.stock === 0}
-              className="text-left bg-surface border border-border rounded-lg p-4 hover:border-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-sm font-medium">{item.name}</span>
-                {item.stock <= item.lowStockAt && (
-                  <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning">
-                    {item.stock === 0 ? 'OUT' : 'LOW'}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-text-faint mt-0.5">{item.variant}</p>
-              <div className="flex justify-between items-end mt-3">
-                <span className="text-lg font-display">{item.price} DT</span>
-                <span className="text-xs text-text-muted">{item.stock} in stock</span>
-              </div>
-            </button>
-          ))}
+        {/* Product Grid */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map(item => {
+              const { stock, lowStockAt } = item;
+              return (
+                <div key={item.id} className="border border-border-warm hover:border-accent bg-surface flex flex-col transition-colors">
+                  <div className="relative h-48 bg-surface-variant w-full shrink-0">
+                    {stock > lowStockAt ? (
+                      <div className="absolute top-0 left-0 bg-accent-light text-[#561f00] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        IN STOCK: {stock}
+                      </div>
+                    ) : stock <= lowStockAt && stock > 0 ? (
+                      <div className="absolute top-0 left-0 bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        LOW STOCK: {stock}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 left-0 bg-danger text-white font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        OUT OF STOCK
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <div className="font-mono text-[14px] text-text-warm mb-1">{item.sku}</div>
+                    <div className="text-[18px] font-bold uppercase line-clamp-2 mb-4 flex-1">{item.name}</div>
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="text-[24px] font-semibold text-accent-light">
+                        {item.price.toFixed(2)} DT
+                      </div>
+                      <button 
+                        onClick={() => addToCart(item)}
+                        disabled={stock === 0}
+                        className="w-12 h-12 bg-surface-variant border border-border-warm hover:border-accent flex items-center justify-center disabled:opacity-50 disabled:hover:border-border-warm transition-colors"
+                      >
+                        <Plus className="w-6 h-6 text-text" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Cart */}
-      <div className="w-96 shrink-0 border-l border-border flex flex-col bg-surface">
-        <div className="px-5 py-5 border-b border-border">
-          <h3 className="text-lg">Current sale</h3>
+      {/* RIGHT PANEL */}
+      <div className="w-[35%] min-w-[350px] bg-surface-high border-l-2 border-border-warm flex flex-col h-full overflow-hidden">
+        <div className="p-6 border-b border-border-warm shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[24px] font-black uppercase tracking-tight leading-[32px]">CURRENT SALE</h2>
+            <button 
+              onClick={() => setCart([])}
+              className="text-danger font-mono text-[12px] font-bold tracking-[0.1em] uppercase flex items-center gap-2 hover:opacity-80"
+            >
+              <Trash2 className="w-4 h-4" /> CLEAR
+            </button>
+          </div>
+          <div className="font-mono text-text-warm">{txnId}</div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-          {cart.length === 0 && (
-            <p className="text-sm text-text-faint">Tap an item to add it to the sale.</p>
-          )}
-          {cart.map((line) => (
-            <div key={line.id} className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{line.name}</p>
-                <p className="text-xs text-text-faint">{line.price} DT</p>
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+          {cart.map(line => (
+            <div key={line.item.id} className="bg-surface border border-border-warm p-4 flex flex-col gap-3 shrink-0">
+              <div className="flex justify-between items-start gap-4">
+                <div className="font-bold uppercase leading-tight flex-1">{line.item.name}</div>
+                <div className="font-mono text-accent-light font-bold whitespace-nowrap">
+                  {line.item.price.toFixed(2)} DT
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 bg-surface-2 rounded-md px-1.5 py-1">
-                <button onClick={() => changeQty(line.id, -1)} className="p-1 hover:text-accent">
-                  <Minus size={13} />
-                </button>
-                <span className="text-sm w-4 text-center">{line.qty}</span>
-                <button onClick={() => changeQty(line.id, 1)} className="p-1 hover:text-accent">
-                  <Plus size={13} />
-                </button>
+              <div className="font-mono text-[14px] text-text-warm">{line.item.sku}</div>
+              
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center border border-border-warm bg-surface-container h-12 w-32 shrink-0">
+                  <button 
+                    onClick={() => changeQty(line.item.id, -1)}
+                    className="flex-1 flex items-center justify-center h-full hover:bg-surface-variant transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center h-full border-x border-border-warm font-mono font-bold">
+                    {line.qty}
+                  </div>
+                  <button 
+                    onClick={() => changeQty(line.item.id, 1)}
+                    className="flex-1 flex items-center justify-center h-full hover:bg-surface-variant transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="font-mono text-lg font-bold whitespace-nowrap">
+                  {(line.item.price * line.qty).toFixed(2)} DT
+                </div>
               </div>
-              <button onClick={() => removeLine(line.id)} className="text-text-faint hover:text-danger">
-                <Trash2 size={15} />
-              </button>
             </div>
           ))}
+          {cart.length === 0 && (
+            <div className="text-center text-text-muted font-mono mt-10">
+              Cart is empty
+            </div>
+          )}
         </div>
 
-        <div className="px-5 py-5 border-t border-border space-y-4">
-          <div className="flex justify-between items-baseline">
-            <span className="text-sm text-text-muted">Total</span>
-            <span className="text-3xl font-display">{total} DT</span>
+        <div className="mt-auto p-6 bg-surface border-t-2 border-border-warm shrink-0">
+          <div className="flex justify-between items-center mb-2">
+            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">Subtotal</span>
+            <span className="font-mono text-lg">{subtotal.toFixed(2)} DT</span>
           </div>
-          <button
+          <div className="flex justify-between items-center border-b border-border-warm mb-4 pb-4">
+            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">Tax (8%)</span>
+            <span className="font-mono text-lg">{tax.toFixed(2)} DT</span>
+          </div>
+          <div className="flex justify-between items-end mb-6">
+            <span className="text-[32px] font-black uppercase leading-none">TOTAL</span>
+            <span className="text-[48px] font-bold text-accent tracking-tight leading-none">
+              {total.toFixed(2)} DT
+            </span>
+          </div>
+          <button 
+            className="w-full bg-accent-light text-[#572000] font-black text-[24px] uppercase h-20 flex items-center justify-center gap-4 border-4 border-accent-light hover:bg-accent-container active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
             disabled={cart.length === 0}
-            onClick={() => setCart([])}
-            className="w-full bg-accent hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-md transition-colors"
           >
-            Log sale
+            <ShoppingCart className="w-8 h-8" /> LOG SALE
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
