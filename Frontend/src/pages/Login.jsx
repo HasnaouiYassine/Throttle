@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { User, Lock, Eye, EyeOff, LogIn, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function Login() {
   const { t } = useTranslation()
@@ -35,7 +36,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg text-text px-4 py-8">
-      <LanguageSwitcher className="mb-6" />
+      <div className="mb-6 flex items-center justify-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
 
       <div className="w-full max-w-md bg-surface border-2 border-border-warm p-6 sm:p-8">
         {/* Logo */}

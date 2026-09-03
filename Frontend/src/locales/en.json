@@ -20,6 +20,10 @@
     "tagline": "MOTO PARTS POS V1.0",
     "operator": "Shop Operator"
   },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
   "login": {
     "title": "Sign in",
     "subtitle": "Enter your credentials to access the POS",

@@ -20,6 +20,10 @@
     "tagline": "PIÈCES MOTO POS V1.0",
     "operator": "Opérateur"
   },
+  "theme": {
+    "switchToLight": "Passer au mode clair",
+    "switchToDark": "Passer au mode sombre"
+  },
   "login": {
     "title": "Connexion",
     "subtitle": "Saisissez vos identifiants pour accéder à la caisse",

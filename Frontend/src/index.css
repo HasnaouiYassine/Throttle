@@ -31,6 +31,41 @@
   --color-success: #3fb27f;
 }
 
+/* Light theme — active whenever <html> does NOT carry the .dark class */
+html:not(.dark) {
+  --color-bg: #f3efe9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0ebe2;
+  --color-surface-high: #e7dfd1;
+  --color-surface-low: #faf7f1;
+  --color-surface-container: #efe9dc;
+  --color-surface-variant: #e2dac9;
+  --color-border: #ddd3bf;
+  --color-border-warm: #c9a98d;
+  --color-border-outline: #8a6f5c;
+
+  --color-text: #1e1b16;
+  --color-text-muted: #6f675a;
+  --color-text-faint: #a29881;
+  --color-text-warm: #7a5a44;
+
+  --color-accent: #e14e12;
+  --color-accent-dim: #7a2c10;
+  --color-accent-light: #b8490f;
+  --color-accent-container: #ff6b00;
+  --color-warning: #b97a0e;
+  --color-danger: #cf363b;
+  --color-success: #2e8b57;
+}
+
+html {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
 body {
   margin: 0;
   background: var(--color-bg);

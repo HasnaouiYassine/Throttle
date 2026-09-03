@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Gauge, ShoppingCart, Package, Truck, History, Menu, X, LogOut } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
+import ThemeToggle from './ThemeToggle'
 import { useAuth } from '../auth/AuthContext'
 
 const navItems = [
@@ -102,9 +103,10 @@ export default function Layout() {
           <NavLinks />
         </nav>
 
-        {/* Language */}
-        <div className="px-4 pb-3">
+        {/* Language + theme */}
+        <div className="px-4 pb-3 flex items-center gap-2">
           <LanguageSwitcher className="justify-start" />
+          <ThemeToggle className="ms-auto" />
         </div>
 
         {/* Footer */}
@@ -129,9 +131,12 @@ export default function Layout() {
           <img
             src="/logo.png"
             alt="Throttle logo"
-            className="h-10 w-auto max-w-[160px] object-contain"
+            className="h-10 w-auto max-w-[120px] sm:max-w-[160px] object-contain"
           />
-          <LanguageSwitcher className="ms-auto" />
+          <div className="ms-auto flex items-center gap-1">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
         </header>
 
         <main className="flex-1 min-h-0 lg:overflow-y-auto">
@@ -182,9 +187,10 @@ export default function Layout() {
           <NavLinks onNavigate={() => setMenuOpen(false)} />
         </nav>
 
-        {/* Language */}
-        <div className="px-4 pb-3">
+        {/* Language + theme */}
+        <div className="px-4 pb-3 flex items-center gap-2">
           <LanguageSwitcher />
+          <ThemeToggle className="ms-auto" />
         </div>
 
         {/* Footer */}

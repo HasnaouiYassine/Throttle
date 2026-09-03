@@ -1,10 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <title>Throttle - Moto Parts POS</title>
+    <script>
+      try {
+        if ((localStorage.getItem('throttle-theme') || 'dark') !== 'dark') {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {
+        /* keep default dark theme */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
