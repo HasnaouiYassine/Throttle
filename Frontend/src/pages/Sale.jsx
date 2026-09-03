@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Minus, Trash2, Search, ShoppingCart } from 'lucide-react';
-import { items, categories } from '../data/mockData';
+import { items, categories, getCategoryId } from '../data/mockData';
 
 export default function Sale() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Parts');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [cart, setCart] = useState([]);
   const [txnId, setTxnId] = useState('');
 
@@ -20,7 +22,7 @@ export default function Sale() {
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      const matchesCategory = selectedCategory === 'All Parts' || item.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'ALL' || getCategoryId(item) === selectedCategory;
       const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                             item.sku.toLowerCase().includes(search.toLowerCase());
       return matchesCategory && matchesSearch;
@@ -65,34 +67,35 @@ export default function Sale() {
       <div className="flex-1 flex flex-col lg:h-full lg:overflow-hidden min-w-0">
         {/* Top bar */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between p-4 sm:p-6 border-b border-border-warm bg-surface shrink-0">
-          <h1 className="text-2xl sm:text-[32px] font-bold">Categories</h1>
+          <h1 className="text-2xl sm:text-[32px] font-bold">{t('sale.title')}</h1>
           <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted rtl:left-auto rtl:right-4" />
             <input
               type="text"
-              placeholder="Search SKU or Product..."
+              placeholder={t('sale.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="min-h-[48px] w-full sm:w-72 pl-12 pr-4 bg-surface-variant border border-border-warm rounded-none text-text focus:outline-none focus:border-accent font-mono placeholder:text-text-muted"
+              className="min-h-[48px] w-full sm:w-72 pl-12 pr-4 rtl:pl-4 rtl:pr-12 bg-surface-variant border border-border-warm rounded-none text-text focus:outline-none focus:border-accent font-mono placeholder:text-text-muted"
             />
           </div>
         </div>
 
         {/* Category Filter Chips */}
         <div className="flex items-center gap-3 p-4 sm:p-6 overflow-x-auto shrink-0 border-b border-border-warm bg-surface-low">
-          {['All Parts', ...categories.map(c => c.name)].map(cat => {
-            const isActive = selectedCategory === cat;
+          {[{ id: 'ALL' }, ...categories].map(cat => {
+            const isActive = selectedCategory === cat.id;
+            const label = cat.id === 'ALL' ? t('common.allParts') : t(`categories.${cat.id}`, { defaultValue: cat.name });
             return (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
                 className={`min-h-[48px] px-4 sm:px-6 font-mono text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
                   isActive
                     ? 'bg-accent text-white border-2 border-accent'
                     : 'bg-surface border border-border-warm text-text-warm hover:border-border-outline'
                 }`}
               >
-                {cat}
+                {label}
               </button>
             );
           })}
@@ -115,16 +118,16 @@ export default function Sale() {
                       />
                     )}
                     {stock > lowStockAt ? (
-                      <div className="absolute top-0 left-0 bg-accent-light text-[#561f00] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
-                        IN STOCK: {stock}
+                      <div className="absolute top-0 start-0 bg-accent-light text-[#561f00] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        {t('common.inStock')}: {stock}
                       </div>
                     ) : stock <= lowStockAt && stock > 0 ? (
-                      <div className="absolute top-0 left-0 bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
-                        LOW STOCK: {stock}
+                      <div className="absolute top-0 start-0 bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        {t('common.lowStock')}: {stock}
                       </div>
                     ) : (
-                      <div className="absolute top-0 left-0 bg-danger text-white font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
-                        OUT OF STOCK
+                      <div className="absolute top-0 start-0 bg-danger text-white font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
+                        {t('common.outOfStock')}
                       </div>
                     )}
                   </div>
@@ -138,7 +141,7 @@ export default function Sale() {
                       <button 
                         onClick={() => addToCart(item)}
                         disabled={stock === 0}
-                        aria-label={`Add ${item.name} to cart`}
+                        aria-label={t('a11y.addToCart', { name: item.name })}
                         className="w-12 h-12 shrink-0 bg-surface-variant border border-border-warm hover:border-accent flex items-center justify-center disabled:opacity-50 disabled:hover:border-border-warm transition-colors"
                       >
                         <Plus className="w-6 h-6 text-text" />
@@ -153,15 +156,15 @@ export default function Sale() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="w-full lg:w-[35%] lg:min-w-[350px] bg-surface-high border-t-2 lg:border-t-0 lg:border-l-2 border-border-warm flex flex-col lg:h-full lg:overflow-hidden shrink-0">
+      <div className="w-full lg:w-[35%] lg:min-w-[350px] bg-surface-high border-t-2 lg:border-t-0 lg:border-s-2 border-border-warm flex flex-col lg:h-full lg:overflow-hidden shrink-0">
         <div className="p-4 sm:p-6 border-b border-border-warm shrink-0">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <h2 className="text-xl sm:text-[24px] font-black uppercase tracking-tight leading-[32px]">CURRENT SALE</h2>
+            <h2 className="text-xl sm:text-[24px] font-black uppercase tracking-tight leading-[32px]">{t('sale.currentSale')}</h2>
             <button 
               onClick={() => setCart([])}
               className="text-danger font-mono text-[12px] font-bold tracking-[0.1em] uppercase flex items-center gap-2 hover:opacity-80 shrink-0"
             >
-              <Trash2 className="w-4 h-4" /> CLEAR
+              <Trash2 className="w-4 h-4" /> {t('sale.clear')}
             </button>
           </div>
           <div className="font-mono text-text-warm">{txnId}</div>
@@ -191,7 +194,7 @@ export default function Sale() {
                 <div className="flex items-center border border-border-warm bg-surface-container h-12 w-32 shrink-0">
                   <button 
                     onClick={() => changeQty(line.item.id, -1)}
-                    aria-label="Decrease quantity"
+                    aria-label={t('a11y.decQty')}
                     className="flex-1 flex items-center justify-center h-full hover:bg-surface-variant transition-colors"
                   >
                     <Minus className="w-4 h-4" />
@@ -201,7 +204,7 @@ export default function Sale() {
                   </div>
                   <button 
                     onClick={() => changeQty(line.item.id, 1)}
-                    aria-label="Increase quantity"
+                    aria-label={t('a11y.incQty')}
                     className="flex-1 flex items-center justify-center h-full hover:bg-surface-variant transition-colors"
                   >
                     <Plus className="w-4 h-4" />
@@ -215,22 +218,22 @@ export default function Sale() {
           ))}
           {cart.length === 0 && (
             <div className="text-center text-text-muted font-mono mt-10">
-              Cart is empty
+              {t('sale.cartEmpty')}
             </div>
           )}
         </div>
 
         <div className="mt-auto p-4 sm:p-6 bg-surface border-t-2 border-border-warm shrink-0">
           <div className="flex justify-between items-center mb-2">
-            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">Subtotal</span>
+            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">{t('sale.subtotal')}</span>
             <span className="font-mono text-lg">{subtotal.toFixed(2)} DT</span>
           </div>
           <div className="flex justify-between items-center border-b border-border-warm mb-4 pb-4">
-            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">Tax (8%)</span>
+            <span className="uppercase text-text-warm text-sm font-bold tracking-wider">{t('sale.tax')}</span>
             <span className="font-mono text-lg">{tax.toFixed(2)} DT</span>
           </div>
           <div className="flex justify-between items-end mb-6 gap-2">
-            <span className="text-2xl sm:text-[32px] font-black uppercase leading-none">TOTAL</span>
+            <span className="text-2xl sm:text-[32px] font-black uppercase leading-none">{t('sale.total')}</span>
             <span className="text-3xl sm:text-[48px] font-bold text-accent tracking-tight leading-none whitespace-nowrap">
               {total.toFixed(2)} DT
             </span>
@@ -239,7 +242,7 @@ export default function Sale() {
             className="w-full bg-accent-light text-[#572000] font-black text-xl sm:text-[24px] uppercase h-16 sm:h-20 flex items-center justify-center gap-4 border-4 border-accent-light hover:bg-accent-container active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
             disabled={cart.length === 0}
           >
-            <ShoppingCart className="w-8 h-8" /> LOG SALE
+            <ShoppingCart className="w-8 h-8" /> {t('sale.logSale')}
           </button>
         </div>
       </div>

@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Gauge, ShoppingCart, Package, Truck, History, Menu, X } from 'lucide-react'
+import LanguageSwitcher from './LanguageSwitcher'
 
 const navItems = [
-  { to: '/', label: 'POS', icon: ShoppingCart, end: true },
-  { to: '/inventory', label: 'Inventory', icon: Package },
-  { to: '/suppliers', label: 'Suppliers', icon: Truck },
-  { to: '/history', label: 'History', icon: History },
-  { to: '/dashboard', label: 'Dashboard', icon: Gauge },
+  { to: '/', i18nKey: 'nav.pos', icon: ShoppingCart, end: true },
+  { to: '/inventory', i18nKey: 'nav.inventory', icon: Package },
+  { to: '/suppliers', i18nKey: 'nav.suppliers', icon: Truck },
+  { to: '/history', i18nKey: 'nav.history', icon: History },
+  { to: '/dashboard', i18nKey: 'nav.dashboard', icon: Gauge },
 ]
 
 function NavLinks({ onNavigate }) {
+  const { t } = useTranslation()
   return (
     <>
-      {navItems.map(({ to, label, icon: Icon, end }) => (
+      {navItems.map(({ to, i18nKey, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -28,14 +31,29 @@ function NavLinks({ onNavigate }) {
           }
         >
           <Icon size={20} strokeWidth={2} />
-          {label}
+          {t(i18nKey)}
         </NavLink>
       ))}
     </>
   )
 }
 
+function OperatorBadge() {
+  const { t } = useTranslation()
+  return (
+    <div className="flex items-center gap-3 px-2 py-2">
+      <div className="w-10 h-10 bg-surface-variant border border-border-warm flex items-center justify-center">
+        <ShoppingCart size={18} className="text-text-warm" />
+      </div>
+      <span className="font-mono text-[14px] font-medium text-text-muted">
+        {t('brand.operator')}
+      </span>
+    </div>
+  )
+}
+
 export default function Layout() {
+  const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -55,7 +73,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen lg:h-screen flex bg-bg text-text">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 border-r-2 border-border-warm bg-surface flex-col">
+      <aside className="hidden lg:flex w-64 shrink-0 border-e-2 border-border-warm bg-surface flex-col">
         {/* Brand */}
         <div className="px-6 py-6 mb-2">
           <img
@@ -64,7 +82,7 @@ export default function Layout() {
             className="w-full max-w-[180px] h-auto object-contain"
           />
           <p className="font-mono text-[12px] font-bold tracking-[0.1em] text-text-warm mt-3 uppercase">
-            MOTO PARTS POS V1.0
+            {t('brand.tagline')}
           </p>
         </div>
 
@@ -73,16 +91,14 @@ export default function Layout() {
           <NavLinks />
         </nav>
 
+        {/* Language */}
+        <div className="px-4 pb-3">
+          <LanguageSwitcher className="justify-start" />
+        </div>
+
         {/* Footer */}
         <div className="px-4 py-4 mt-auto border-t-2 border-border-warm">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-10 h-10 bg-surface-variant border border-border-warm flex items-center justify-center">
-              <ShoppingCart size={18} className="text-text-warm" />
-            </div>
-            <span className="font-mono text-[14px] font-medium text-text-muted">
-              Shop Operator
-            </span>
-          </div>
+          <OperatorBadge />
         </div>
       </aside>
 
@@ -93,7 +109,7 @@ export default function Layout() {
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
+            aria-label={t('a11y.openMenu')}
             aria-expanded={menuOpen}
             className="flex h-12 w-12 shrink-0 items-center justify-center border border-border-warm bg-surface-variant text-text hover:border-accent transition-colors"
           >
@@ -104,6 +120,7 @@ export default function Layout() {
             alt="Throttle logo"
             className="h-10 w-auto max-w-[160px] object-contain"
           />
+          <LanguageSwitcher className="ms-auto" />
         </header>
 
         <main className="flex-1 min-h-0 lg:overflow-y-auto">
@@ -122,8 +139,8 @@ export default function Layout() {
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r-2 border-border-warm bg-surface transition-transform duration-200 lg:hidden ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 start-0 z-50 flex w-72 max-w-[85vw] flex-col border-e-2 border-border-warm bg-surface transition-transform duration-200 lg:hidden ${
+          menuOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
         }`}
         aria-hidden={!menuOpen}
       >
@@ -136,13 +153,13 @@ export default function Layout() {
               className="w-full max-w-[160px] h-auto object-contain"
             />
             <p className="font-mono text-[12px] font-bold tracking-[0.1em] text-text-warm mt-3 uppercase">
-              MOTO PARTS POS V1.0
+              {t('brand.tagline')}
             </p>
           </div>
           <button
             type="button"
             onClick={() => setMenuOpen(false)}
-            aria-label="Close menu"
+            aria-label={t('a11y.closeMenu')}
             className="flex h-12 w-12 shrink-0 items-center justify-center border border-border-warm bg-surface-variant text-text hover:border-accent transition-colors"
           >
             <X size={22} />
@@ -154,16 +171,14 @@ export default function Layout() {
           <NavLinks onNavigate={() => setMenuOpen(false)} />
         </nav>
 
+        {/* Language */}
+        <div className="px-4 pb-3">
+          <LanguageSwitcher />
+        </div>
+
         {/* Footer */}
         <div className="px-4 py-4 mt-auto border-t-2 border-border-warm">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-10 h-10 bg-surface-variant border border-border-warm flex items-center justify-center">
-              <ShoppingCart size={18} className="text-text-warm" />
-            </div>
-            <span className="font-mono text-[14px] font-medium text-text-muted">
-              Shop Operator
-            </span>
-          </div>
+          <OperatorBadge />
         </div>
       </aside>
     </div>

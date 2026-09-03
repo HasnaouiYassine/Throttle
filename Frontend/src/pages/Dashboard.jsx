@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { sales, items, revenueTrend, heatmapData, topSellers, slowMovers } from '../data/mockData'
@@ -14,10 +15,11 @@ function getIntensityClass(value) {
 }
 
 function CustomTooltip({ active, payload, label }) {
+  const { t } = useTranslation()
   if (active && payload && payload.length) {
     return (
       <div className="bg-surface border border-border-warm p-2">
-        <p className="font-mono text-[12px] text-text-muted">{label}</p>
+        <p className="font-mono text-[12px] text-text-muted">{t(`days.${String(label).toLowerCase()}`, { defaultValue: label })}</p>
         <p className="font-mono text-[14px] text-text font-bold">{payload[0].value} DT</p>
       </div>
     )
@@ -26,6 +28,8 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation()
+  const dayLabel = (d) => t(`days.${String(d).toLowerCase()}`, { defaultValue: d })
   const totalRevenue = useMemo(() => sales.reduce((sum, s) => sum + s.total, 0), [])
 
   const avgTicket = useMemo(() => {
@@ -52,39 +56,39 @@ export default function Dashboard() {
         {/* Total Revenue */}
         <div className="bg-surface border border-border-warm p-4 flex flex-col">
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
-            Total Revenue
+            {t('dashboard.revenue')}
           </span>
           <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {totalRevenue.toLocaleString()} DT
           </span>
           <span className="font-mono text-[14px] text-accent-light flex items-center gap-1 mt-2">
-            <TrendingUp size={14} /> +12.5% vs Last Week
+            <TrendingUp size={14} /> {t('dashboard.vsUp')}
           </span>
         </div>
 
         {/* Avg Transaction */}
         <div className="bg-surface border border-border-warm p-4 flex flex-col">
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
-            Avg Transaction Value
+            {t('dashboard.avgTicket')}
           </span>
           <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {avgTicket} DT
           </span>
           <span className="font-mono text-[14px] text-text-warm flex items-center gap-1 mt-2">
-            <ArrowRight size={14} /> 0.0% vs Last Week
+            <ArrowRight size={14} className="rtl:rotate-180" /> {t('dashboard.vsFlat')}
           </span>
         </div>
 
         {/* Gross Profit Margin */}
         <div className="bg-surface border border-border-warm p-4 flex flex-col">
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
-            Gross Profit Margin
+            {t('dashboard.margin')}
           </span>
           <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {marginPct}%
           </span>
           <span className="font-mono text-[14px] text-danger flex items-center gap-1 mt-2">
-            <TrendingDown size={14} /> -2.1% vs Last Week
+            <TrendingDown size={14} /> {t('dashboard.vsDown')}
           </span>
         </div>
       </div>
@@ -97,11 +101,11 @@ export default function Dashboard() {
           <div className="bg-surface border border-border-warm p-4 h-64 flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
-                Revenue Trend (30 Days)
+                {t('dashboard.trend')}
               </span>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-accent rounded-full" />
-                <span className="font-mono text-[12px] text-text-muted">Gross</span>
+                <span className="font-mono text-[12px] text-text-muted">{t('dashboard.gross')}</span>
               </div>
             </div>
             <div className="flex-1">
@@ -114,7 +118,7 @@ export default function Dashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="#5a4136" vertical={false} />
-                  <XAxis dataKey="day" stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="day" tickFormatter={dayLabel} stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#5c616c" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="revenue" stroke="#ff5a1f" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
@@ -126,7 +130,7 @@ export default function Dashboard() {
           {/* Peak Activity Heatmap */}
           <div className="bg-surface border border-border-warm p-4 flex-1 flex flex-col min-h-[280px]">
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-4">
-              Peak Activity (Heatmap)
+              {t('dashboard.heatmap')}
             </span>
             <div className="flex-1 overflow-x-auto">
               <div className="grid grid-cols-8 gap-1 h-full min-w-[480px]">
@@ -154,7 +158,7 @@ export default function Dashboard() {
                       day === 'Sat' ? 'text-accent-light' : 'text-text-muted'
                     }`}
                   >
-                    {day.toUpperCase()}
+                    {dayLabel(day).toUpperCase()}
                   </div>
                 ))}
               </div>
@@ -167,7 +171,7 @@ export default function Dashboard() {
           {/* Top 5 Best-Sellers */}
           <div className="bg-surface border border-border-warm p-4 flex-1 lg:overflow-auto">
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-accent-light mb-4 block">
-              Top 5 Best-Sellers (MTD)
+              {t('dashboard.best')}
             </span>
             <div className="flex flex-col gap-3">
               {topSellers.map((item, idx) => (
@@ -188,7 +192,7 @@ export default function Dashboard() {
           {/* Top 5 Slow-Movers */}
           <div className="bg-surface border border-border-warm p-4 flex-1 lg:overflow-auto">
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-danger mb-4 block">
-              Top 5 Slow-Movers
+              {t('dashboard.slow')}
             </span>
             <div className="flex flex-col gap-3">
               {slowMovers.map((item, idx) => (

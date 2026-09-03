@@ -31,6 +31,13 @@ export const items = [
   { id: 20, name: 'K&N Oil Filter KN-204C Chrome', sku: 'SKU-FLD-7004', category: 'Filters & Fluids', variant: 'Nut-End / Chrome', size: 'Standard', color: 'Chrome', price: 65, cost: 32, stock: 0, lowStockAt: 6, barcode: '8901234520', image: '/parts/fluids.svg' },
 ]
 
+export const categoryIdByName = Object.fromEntries(categories.map(c => [c.name, c.id]))
+
+export const getCategoryId = (itemOrName) => {
+  const name = typeof itemOrName === 'string' ? itemOrName : itemOrName?.category
+  return categoryIdByName[name] || 'engine'
+}
+
 export const suppliers = [
   { id: 1, name: 'MotoParts Tunisia', shortId: 'MPT-01', contact: '+216 55 123 456', contactPerson: 'Sarah Jenkins', phone: '555-0192', terms: 'Net 30', categories: ['Engine', 'Filters & Fluids'] },
   { id: 2, name: 'BrakePro Distribution', shortId: 'BPD-02', contact: '+216 22 987 654', contactPerson: 'Marcus Cole', phone: '555-0833', terms: 'COD', categories: ['Brakes', 'Suspension'] },
