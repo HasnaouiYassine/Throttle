@@ -20,6 +20,18 @@
     "tagline": "PIÈCES MOTO POS V1.0",
     "operator": "Opérateur"
   },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Saisissez vos identifiants pour accéder à la caisse",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Saisir le nom d'utilisateur...",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Saisir le mot de passe...",
+    "signIn": "SE CONNECTER",
+    "error": "Nom d'utilisateur ou mot de passe invalide.",
+    "serverError": "Serveur injoignable. Veuillez réessayer.",
+    "logout": "Déconnexion"
+  },
   "common": {
     "allParts": "Toutes pièces",
     "inStock": "EN STOCK",

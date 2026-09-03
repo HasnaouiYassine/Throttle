@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Gauge, ShoppingCart, Package, Truck, History, Menu, X } from 'lucide-react'
+import { Gauge, ShoppingCart, Package, Truck, History, Menu, X, LogOut } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
+import { useAuth } from '../auth/AuthContext'
 
 const navItems = [
   { to: '/', i18nKey: 'nav.pos', icon: ShoppingCart, end: true },
@@ -40,6 +41,7 @@ function NavLinks({ onNavigate }) {
 
 function OperatorBadge() {
   const { t } = useTranslation()
+  const { logout } = useAuth()
   return (
     <div className="flex items-center gap-3 px-2 py-2">
       <div className="w-10 h-10 bg-surface-variant border border-border-warm flex items-center justify-center">
@@ -48,6 +50,15 @@ function OperatorBadge() {
       <span className="font-mono text-[14px] font-medium text-text-muted">
         {t('brand.operator')}
       </span>
+      <button
+        type="button"
+        onClick={logout}
+        title={t('login.logout')}
+        aria-label={t('login.logout')}
+        className="ms-auto flex h-10 w-10 shrink-0 items-center justify-center border border-border-warm text-text-warm hover:text-danger hover:border-danger transition-colors"
+      >
+        <LogOut size={18} />
+      </button>
     </div>
   )
 }
