@@ -4,7 +4,7 @@ import { items, categories } from '../data/mockData';
 
 export default function Sale() {
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Gear');
+  const [selectedCategory, setSelectedCategory] = useState('All Parts');
   const [cart, setCart] = useState([]);
   const [txnId, setTxnId] = useState('');
 
@@ -20,7 +20,7 @@ export default function Sale() {
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      const matchesCategory = selectedCategory === 'All Gear' || item.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'All Parts' || item.category === selectedCategory;
       const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                             item.sku.toLowerCase().includes(search.toLowerCase());
       return matchesCategory && matchesSearch;
@@ -80,7 +80,7 @@ export default function Sale() {
 
         {/* Category Filter Chips */}
         <div className="flex items-center gap-3 p-6 overflow-x-auto shrink-0 border-b border-border-warm bg-surface-low">
-          {['All Gear', ...categories.map(c => c.name)].map(cat => {
+          {['All Parts', ...categories.map(c => c.name)].map(cat => {
             const isActive = selectedCategory === cat;
             return (
               <button
@@ -105,7 +105,15 @@ export default function Sale() {
               const { stock, lowStockAt } = item;
               return (
                 <div key={item.id} className="border border-border-warm hover:border-accent bg-surface flex flex-col transition-colors">
-                  <div className="relative h-48 bg-surface-variant w-full shrink-0">
+                  <div className="relative h-48 bg-surface-variant w-full shrink-0 overflow-hidden">
+                    {item.image && (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading="lazy"
+                        className={`w-full h-full object-contain p-4 ${stock === 0 ? 'grayscale opacity-50' : ''}`}
+                      />
+                    )}
                     {stock > lowStockAt ? (
                       <div className="absolute top-0 left-0 bg-accent-light text-[#561f00] font-mono text-[12px] font-bold tracking-[0.1em] uppercase px-3 py-1">
                         IN STOCK: {stock}
@@ -161,13 +169,22 @@ export default function Sale() {
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
           {cart.map(line => (
             <div key={line.item.id} className="bg-surface border border-border-warm p-4 flex flex-col gap-3 shrink-0">
-              <div className="flex justify-between items-start gap-4">
-                <div className="font-bold uppercase leading-tight flex-1">{line.item.name}</div>
-                <div className="font-mono text-accent-light font-bold whitespace-nowrap">
-                  {line.item.price.toFixed(2)} DT
+              <div className="flex gap-3">
+                <div className="w-14 h-14 shrink-0 bg-surface-variant border border-border-warm overflow-hidden">
+                  {line.item.image && (
+                    <img src={line.item.image} alt={line.item.name} className="w-full h-full object-contain p-1" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="font-bold uppercase leading-tight flex-1 truncate" title={line.item.name}>{line.item.name}</div>
+                    <div className="font-mono text-accent-light font-bold whitespace-nowrap">
+                      {line.item.price.toFixed(2)} DT
+                    </div>
+                  </div>
+                  <div className="font-mono text-[14px] text-text-warm mt-1">{line.item.sku}</div>
                 </div>
               </div>
-              <div className="font-mono text-[14px] text-text-warm">{line.item.sku}</div>
               
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center border border-border-warm bg-surface-container h-12 w-32 shrink-0">

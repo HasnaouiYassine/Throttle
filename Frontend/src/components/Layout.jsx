@@ -15,11 +15,13 @@ export default function Layout() {
       <aside className="w-64 shrink-0 border-r-2 border-border-warm bg-surface flex flex-col">
         {/* Brand */}
         <div className="px-6 py-6 mb-2">
-          <h1 className="font-sans text-2xl font-black text-accent-light uppercase tracking-tighter">
-            THROTTLE
-          </h1>
-          <p className="font-mono text-[12px] font-bold tracking-[0.1em] text-text-warm mt-1 uppercase">
-            SHOP POS V1.0
+          <img
+            src="/logo.png"
+            alt="Throttle logo"
+            className="w-full max-w-[180px] h-auto object-contain"
+          />
+          <p className="font-mono text-[12px] font-bold tracking-[0.1em] text-text-warm mt-3 uppercase">
+            MOTO PARTS POS V1.0
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { items, categories } from '../data/mockData';
-import { Search, Plus, Bell, Settings, Filter, MoreVertical, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Search, Plus, Bell, Settings, Filter, MoreVertical, ChevronLeft, ChevronRight, AlertTriangle, Package } from 'lucide-react';
 
 export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,8 +121,12 @@ export default function Inventory() {
                 className={`grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-low transition-colors ${isOutOfStock ? 'opacity-60' : ''}`}
               >
                 <div>
-                  <div className="w-12 h-12 bg-surface-variant border border-border-warm overflow-hidden">
-                    {item.image && <img src={item.image} alt={item.name} className="w-full h-full object-cover" />}
+                  <div className="w-12 h-12 bg-surface-variant border border-border-warm overflow-hidden flex items-center justify-center">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="w-5 h-5 text-text-muted" />
+                    )}
                   </div>
                 </div>
                 

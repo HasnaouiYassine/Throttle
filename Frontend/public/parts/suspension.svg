@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#23262c"/>
+  <circle cx="200" cy="130" r="95" fill="none" stroke="#353534" stroke-width="2"/>
+  <circle cx="200" cy="130" r="78" fill="none" stroke="#353534" stroke-width="2"/>
+  <circle cx="200" cy="58" r="9" fill="none" stroke="#ff5a1f" stroke-width="5"/>
+  <line x1="200" y1="67" x2="200" y2="86" stroke="#ff5a1f" stroke-width="6"/>
+  <polyline points="175,86 225,101 175,116 225,131 175,146 225,161 175,176" fill="none" stroke="#ff5a1f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="200" y1="176" x2="200" y2="198" stroke="#ff5a1f" stroke-width="6"/>
+  <rect x="174" y="198" width="52" height="12" fill="#ff5a1f"/>
+  <text x="200" y="262" text-anchor="middle" font-family="monospace" font-size="20" letter-spacing="4" fill="#e2bfb0">SUSPENSION</text>
+</svg>

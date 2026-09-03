@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#23262c"/>
+  <circle cx="200" cy="130" r="95" fill="none" stroke="#353534" stroke-width="2"/>
+  <circle cx="200" cy="130" r="78" fill="none" stroke="#353534" stroke-width="2"/>
+  <circle cx="200" cy="130" r="60" fill="none" stroke="#ff5a1f" stroke-width="16"/>
+  <circle cx="200" cy="130" r="28" fill="none" stroke="#ff5a1f" stroke-width="6"/>
+  <line x1="200" y1="102" x2="200" y2="158" stroke="#ff5a1f" stroke-width="4"/>
+  <line x1="172" y1="130" x2="228" y2="130" stroke="#ff5a1f" stroke-width="4"/>
+  <circle cx="200" cy="130" r="6" fill="#ff5a1f"/>
+  <text x="200" y="262" text-anchor="middle" font-family="monospace" font-size="20" letter-spacing="4" fill="#e2bfb0">TIRES</text>
+</svg>
