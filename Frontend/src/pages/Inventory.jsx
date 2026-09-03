@@ -18,21 +18,21 @@ export default function Inventory() {
   }, [searchQuery, activeCategory, lowStockOnly]);
 
   return (
-    <div className="h-full flex flex-col bg-bg overflow-hidden text-text">
+    <div className="flex flex-col bg-bg lg:h-full lg:overflow-hidden text-text">
       {/* HEADER BAR */}
-      <header className="bg-surface-container border-b-2 border-border-warm h-20 px-6 shrink-0 flex justify-between items-center">
-        <h1 className="font-sans text-[32px] font-bold text-text uppercase tracking-tight">
+      <header className="bg-surface-container border-b-2 border-border-warm px-4 sm:px-6 py-3 shrink-0 flex flex-col xl:flex-row gap-3 xl:justify-between xl:items-center">
+        <h1 className="font-sans text-2xl sm:text-[32px] font-bold text-text uppercase tracking-tight">
           INVENTORY MANAGEMENT
         </h1>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+          <div className="relative flex-1 sm:flex-none min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted w-5 h-5" />
             <input 
               type="text" 
               placeholder="SCAN BARCODE OR SEARCH..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64 h-12 bg-surface border border-border-warm text-text font-mono pl-10 pr-4 placeholder:text-text-muted focus:outline-none focus:border-accent"
+              className="w-full sm:w-64 h-12 bg-surface border border-border-warm text-text font-mono pl-10 pr-4 placeholder:text-text-muted focus:outline-none focus:border-accent"
             />
           </div>
           <button className="w-12 h-12 flex items-center justify-center bg-surface border border-border-warm hover:border-accent transition-colors">
@@ -41,7 +41,7 @@ export default function Inventory() {
           <button className="w-12 h-12 flex items-center justify-center bg-surface border border-border-warm hover:border-accent transition-colors">
             <Settings className="w-5 h-5 text-text-warm" />
           </button>
-          <button className="bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase h-12 px-6 flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <button className="bg-accent-container text-[#572000] font-mono text-[12px] font-bold tracking-[0.1em] uppercase h-12 px-6 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             ADD NEW ITEM
           </button>
@@ -49,8 +49,8 @@ export default function Inventory() {
       </header>
 
       {/* FILTER BAR */}
-      <div className="bg-surface-container p-4 border border-border-warm shrink-0 flex justify-between items-center m-4 mb-0">
-        <div className="flex items-center gap-2 overflow-x-auto">
+      <div className="bg-surface-container p-4 border border-border-warm shrink-0 flex flex-col xl:flex-row gap-3 xl:justify-between xl:items-center m-4 mb-0">
+        <div className="flex items-center gap-2 overflow-x-auto w-full">
           <button
             onClick={() => setActiveCategory('ALL')}
             className={`h-10 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
@@ -75,7 +75,7 @@ export default function Inventory() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-6 pl-6 shrink-0">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 xl:pl-6 shrink-0">
           <label className="flex items-center gap-2 cursor-pointer group">
             <input 
               type="checkbox" 
@@ -96,9 +96,9 @@ export default function Inventory() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 bg-surface border border-border-warm overflow-hidden flex flex-col m-4 mt-4">
+      <div className="flex-1 bg-surface border border-border-warm overflow-auto flex flex-col m-4 mt-4 min-h-0">
         {/* Header row */}
-        <div className="grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] gap-4 p-4 bg-surface-high border-b-2 border-border-warm shrink-0">
+        <div className="grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] min-w-[880px] gap-4 p-4 bg-surface-high border-b-2 border-border-warm shrink-0">
           <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">IMG</div>
           <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">ITEM NAME & SKU</div>
           <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">CATEGORY</div>
@@ -110,7 +110,7 @@ export default function Inventory() {
         </div>
         
         {/* Body rows */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 lg:overflow-y-auto">
           {filteredItems.map(item => {
             const isOutOfStock = item.stock === 0;
             const isLowStock = !isOutOfStock && item.stock <= (item.lowStockAt || 5);
@@ -118,7 +118,7 @@ export default function Inventory() {
             return (
               <div 
                 key={item.id} 
-                className={`grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-low transition-colors ${isOutOfStock ? 'opacity-60' : ''}`}
+                className={`grid grid-cols-[3rem_1fr_10rem_10rem_6rem_8rem_8rem_4rem] min-w-[880px] gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-low transition-colors ${isOutOfStock ? 'opacity-60' : ''}`}
               >
                 <div>
                   <div className="w-12 h-12 bg-surface-variant border border-border-warm overflow-hidden flex items-center justify-center">
@@ -196,7 +196,7 @@ export default function Inventory() {
       </div>
 
       {/* PAGINATION FOOTER */}
-      <div className="p-4 border-t-2 border-border-warm bg-surface-high flex justify-between items-center shrink-0">
+      <div className="p-4 border-t-2 border-border-warm bg-surface-high flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center shrink-0">
         <div className="font-mono text-[14px] text-text-warm">
           Showing 1 - {filteredItems.length} of {filteredItems.length} Items
         </div>

@@ -37,14 +37,14 @@ const History = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-bg text-text overflow-hidden">
+    <div className="flex flex-col bg-bg text-text lg:h-screen lg:overflow-hidden min-h-full">
       {/* HEADER BAR */}
-      <header className="bg-surface-container border-b-2 border-border-warm h-12 px-6 flex justify-between items-center sticky top-0 z-10 shrink-0">
-        <div className="font-sans text-[24px] font-black text-accent-light uppercase">
+      <header className="bg-surface-container border-b-2 border-border-warm px-4 sm:px-6 py-2 min-h-[3rem] flex justify-between items-center gap-2 sticky top-0 z-10 shrink-0">
+        <div className="font-sans text-lg sm:text-[24px] font-black text-accent-light uppercase truncate">
           SALES HISTORY
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="flex items-center gap-1 sm:gap-4 shrink-0">
+          <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-warm" />
             <input
               type="text"
@@ -52,13 +52,13 @@ const History = () => {
               className="w-64 pl-10 pr-4 h-12 bg-surface border border-border-warm font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text placeholder-text-warm focus:outline-none focus:border-accent"
             />
           </div>
-          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+          <button className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:text-accent-light transition-colors" aria-label="Settings">
             <Settings className="w-5 h-5" />
           </button>
-          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+          <button className="w-10 h-10 sm:w-12 sm:h-12 hidden sm:flex items-center justify-center hover:text-accent-light transition-colors" aria-label="Notifications">
             <Bell className="w-5 h-5" />
           </button>
-          <button className="w-12 h-12 flex items-center justify-center hover:text-accent-light transition-colors">
+          <button className="w-10 h-10 sm:w-12 sm:h-12 hidden sm:flex items-center justify-center hover:text-accent-light transition-colors" aria-label="Account">
             <User className="w-5 h-5" />
           </button>
         </div>
@@ -67,12 +67,12 @@ const History = () => {
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto pb-6">
         {/* FILTER BAR */}
-        <div className="flex gap-4 mb-8 items-end p-6 pt-6">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 mb-8 sm:items-end p-4 sm:p-6 pt-4 sm:pt-6">
           <div className="flex flex-col gap-2">
             <label className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
               DATE RANGE
             </label>
-            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent">
+            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent w-full sm:w-auto">
               <option>TODAY</option>
               <option>YESTERDAY</option>
               <option>LAST 7 DAYS</option>
@@ -84,7 +84,7 @@ const History = () => {
             <label className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">
               PAYMENT TYPE
             </label>
-            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent">
+            <select className="bg-surface border-2 border-border-warm h-12 px-4 text-text font-sans focus:outline-none focus:border-accent w-full sm:w-auto">
               <option>ALL METHODS</option>
               <option>CARD</option>
               <option>CASH</option>
@@ -106,15 +106,15 @@ const History = () => {
             </div>
           </div>
 
-          <button className="flex items-center gap-2 border-2 border-border-warm bg-surface h-12 px-6 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:bg-surface-variant transition-colors text-text">
+          <button className="flex items-center justify-center gap-2 border-2 border-border-warm bg-surface h-12 px-6 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:bg-surface-variant transition-colors text-text w-full sm:w-auto">
             <Download className="w-4 h-4" />
             EXPORT CSV
           </button>
         </div>
 
         {/* TRANSACTIONS TABLE */}
-        <div className="bg-surface border-2 border-border-warm mx-6">
-          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 p-4 bg-surface-high border-b-2 border-border-warm">
+        <div className="bg-surface border-2 border-border-warm mx-4 sm:mx-6 overflow-x-auto">
+          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] min-w-[720px] gap-4 p-4 bg-surface-high border-b-2 border-border-warm">
             <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">DATE / TIME</div>
             <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm">SALE ID</div>
             <div className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm text-center">ITEMS</div>
@@ -129,7 +129,7 @@ const History = () => {
               <div
                 key={sale.id}
                 onClick={() => setSelectedSale(sale)}
-                className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 p-4 border-b border-border-warm hover:bg-surface-variant border-l-4 border-l-transparent hover:border-l-accent transition-all cursor-pointer group items-center"
+                className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] min-w-[720px] gap-4 p-4 border-b border-border-warm hover:bg-surface-variant border-l-4 border-l-transparent hover:border-l-accent transition-all cursor-pointer group items-center"
               >
                 <div>
                   <div className="font-mono text-[14px] text-text">{date}</div>
@@ -161,7 +161,7 @@ const History = () => {
         </div>
 
         {/* PAGINATION */}
-        <div className="flex justify-between items-center mt-4 mx-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center mt-4 mx-4 sm:mx-6 mb-6">
           <div className="font-mono text-[14px] text-text-warm">
             Showing 1-{sales.length} of {sales.length} records
           </div>

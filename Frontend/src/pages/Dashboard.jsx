@@ -46,15 +46,15 @@ export default function Dashboard() {
   const marginPct = totalRevenue > 0 ? ((margin / totalRevenue) * 100).toFixed(1) : '0.0'
 
   return (
-    <div className="flex flex-col h-screen overflow-auto">
+    <div className="flex flex-col min-h-full lg:h-full lg:overflow-auto">
       {/* METRIC CARDS */}
-      <div className="grid grid-cols-3 gap-4 p-6 pb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6 sm:pb-4">
         {/* Total Revenue */}
         <div className="bg-surface border border-border-warm p-4 flex flex-col">
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
             Total Revenue
           </span>
-          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+          <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {totalRevenue.toLocaleString()} DT
           </span>
           <span className="font-mono text-[14px] text-accent-light flex items-center gap-1 mt-2">
@@ -67,7 +67,7 @@ export default function Dashboard() {
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
             Avg Transaction Value
           </span>
-          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+          <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {avgTicket} DT
           </span>
           <span className="font-mono text-[14px] text-text-warm flex items-center gap-1 mt-2">
@@ -80,7 +80,7 @@ export default function Dashboard() {
           <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-2">
             Gross Profit Margin
           </span>
-          <span className="font-sans text-[48px] font-bold leading-[56px] tracking-tight text-text">
+          <span className="font-sans text-3xl sm:text-[36px] xl:text-[48px] font-bold leading-tight sm:leading-[56px] tracking-tight text-text">
             {marginPct}%
           </span>
           <span className="font-mono text-[14px] text-danger flex items-center gap-1 mt-2">
@@ -90,9 +90,9 @@ export default function Dashboard() {
       </div>
 
       {/* MAIN GRID */}
-      <div className="grid grid-cols-12 gap-4 px-6 pb-6 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 px-4 sm:px-6 pb-6 flex-1 min-h-0">
         {/* LEFT: Charts */}
-        <div className="col-span-8 flex flex-col gap-4">
+        <div className="lg:col-span-8 flex flex-col gap-4">
           {/* Revenue Trend */}
           <div className="bg-surface border border-border-warm p-4 h-64 flex flex-col">
             <div className="flex justify-between items-center mb-4">
@@ -128,8 +128,8 @@ export default function Dashboard() {
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text-warm mb-4">
               Peak Activity (Heatmap)
             </span>
-            <div className="flex-1">
-              <div className="grid grid-cols-8 gap-1 h-full">
+            <div className="flex-1 overflow-x-auto">
+              <div className="grid grid-cols-8 gap-1 h-full min-w-[480px]">
                 {/* Rows: each time slot */}
                 {heatmapData.map((row) => (
                   <div key={row.time} className="contents">
@@ -163,9 +163,9 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT: Lists */}
-        <div className="col-span-4 flex flex-col gap-4">
+        <div className="lg:col-span-4 flex flex-col gap-4">
           {/* Top 5 Best-Sellers */}
-          <div className="bg-surface border border-border-warm p-4 flex-1 overflow-auto">
+          <div className="bg-surface border border-border-warm p-4 flex-1 lg:overflow-auto">
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-accent-light mb-4 block">
               Top 5 Best-Sellers (MTD)
             </span>
@@ -186,7 +186,7 @@ export default function Dashboard() {
           </div>
 
           {/* Top 5 Slow-Movers */}
-          <div className="bg-surface border border-border-warm p-4 flex-1 overflow-auto">
+          <div className="bg-surface border border-border-warm p-4 flex-1 lg:overflow-auto">
             <span className="font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-danger mb-4 block">
               Top 5 Slow-Movers
             </span>

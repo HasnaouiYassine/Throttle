@@ -24,29 +24,29 @@ export default function Suppliers() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
+    <div className="min-h-full bg-bg flex flex-col">
       {/* Header Bar */}
-      <header className="bg-surface-container border-b-2 border-border-warm h-12 px-6 flex justify-between items-center sticky top-0 z-10">
-        <h1 className="font-sans text-[32px] font-bold text-accent-light">
+      <header className="bg-surface-container border-b-2 border-border-warm px-4 sm:px-6 py-2 flex justify-between items-center gap-2 sticky top-0 z-10 min-h-[3rem]">
+        <h1 className="font-sans text-xl sm:text-[32px] font-bold text-accent-light truncate">
           Suppliers & Purchase Orders
         </h1>
-        <div className="flex gap-4">
-          <button className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center">
+        <div className="flex gap-2 sm:gap-4 shrink-0">
+          <button className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center" aria-label="Settings">
             <Settings size={20} />
           </button>
-          <button className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center">
+          <button className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center" aria-label="Notifications">
             <Bell size={20} />
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="p-6 flex gap-4 flex-1">
+      <main className="p-4 sm:p-6 flex flex-col lg:flex-row gap-4 flex-1">
         {/* Left Column */}
-        <div className="w-1/3 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-sans text-[24px] font-semibold leading-[32px] text-text">Active Suppliers</h2>
-            <button className="flex items-center gap-2 border-2 border-border-warm text-text h-12 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:border-accent min-h-[48px]">
+        <div className="w-full lg:w-1/3 flex flex-col gap-4">
+          <div className="flex justify-between items-center gap-2">
+            <h2 className="font-sans text-xl sm:text-[24px] font-semibold leading-[32px] text-text">Active Suppliers</h2>
+            <button className="flex items-center gap-2 border-2 border-border-warm text-text h-12 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:border-accent min-h-[48px] shrink-0">
               <Plus size={16} /> NEW
             </button>
           </div>
@@ -54,9 +54,9 @@ export default function Suppliers() {
           <div className="flex flex-col gap-4">
             {suppliers.map(supplier => (
               <div key={supplier.id} className="bg-surface-high border-2 border-border-warm p-4 hover:border-accent transition-colors cursor-pointer">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-sans text-[18px] font-bold text-accent-light">{supplier.name}</h3>
-                  <span className="bg-surface-variant text-text-warm px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] border border-border-warm uppercase">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <h3 className="font-sans text-[18px] font-bold text-accent-light min-w-0">{supplier.name}</h3>
+                  <span className="bg-surface-variant text-text-warm px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] border border-border-warm uppercase shrink-0">
                     {supplier.shortId || supplier.id.substring(0,6)}
                   </span>
                 </div>
@@ -85,19 +85,19 @@ export default function Suppliers() {
         </div>
 
         {/* Right Column */}
-        <div className="w-2/3 flex flex-col gap-4">
-          <div className="bg-surface-container border-2 border-border-warm p-4 flex justify-between items-center">
+        <div className="w-full lg:w-2/3 flex flex-col gap-4 min-w-0">
+          <div className="bg-surface-container border-2 border-border-warm p-4 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
             <div>
-              <h2 className="font-sans text-[24px] font-semibold leading-[32px] text-text">Purchase Orders</h2>
+              <h2 className="font-sans text-xl sm:text-[24px] font-semibold leading-[32px] text-text">Purchase Orders</h2>
               <p className="font-mono text-[14px] text-text-warm">Manage incoming stock requests</p>
             </div>
-            <button className="bg-accent-container text-[#572000] font-black text-[18px] h-12 px-6 border-2 border-transparent uppercase hover:opacity-90 min-h-[48px]">
+            <button className="bg-accent-container text-[#572000] font-black text-[16px] sm:text-[18px] h-12 px-6 border-2 border-transparent uppercase hover:opacity-90 min-h-[48px] whitespace-nowrap">
               NEW PURCHASE ORDER
             </button>
           </div>
 
           <div className="bg-surface-low border-2 border-border-warm overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[680px] text-left border-collapse">
               <thead className="bg-surface-variant border-b-2 border-border-warm">
                 <tr>
                   <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">PO #</th>
