@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Minus, Trash2, Search, ShoppingCart } from 'lucide-react';
-import { items, categories, getCategoryId } from '../data/mockData';
+import { categories, getCategoryId } from '../data/catalog';
+import { useAppData } from '../data/AppDataContext';
 
 export default function Sale() {
   const { t } = useTranslation();
+  const { items, createSale } = useAppData();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [cart, setCart] = useState([]);
   const [txnId, setTxnId] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
+  const [savingSale, setSavingSale] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
 
   useEffect(() => {
     // Generate TXN-XXXXX-X
@@ -60,6 +65,23 @@ export default function Sale() {
   const subtotal = cart.reduce((sum, line) => sum + (line.item.price * line.qty), 0);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
+
+  const logSale = async () => {
+    if (!cart.length) return;
+    setSavingSale(true);
+    setCheckoutError('');
+    try {
+      await createSale({ txnId, paymentMethod, lines: cart.map((line) => ({ itemId: line.item.id, qty: line.qty })) });
+      setCart([]);
+      const p1 = Math.floor(10000 + Math.random() * 90000);
+      const p2 = Math.floor(1 + Math.random() * 9);
+      setTxnId(`TXN-${p1}-${p2}`);
+    } catch (reason) {
+      setCheckoutError(reason.message.startsWith('INSUFFICIENT_STOCK') ? 'Stock changed. Please review your cart.' : 'Could not log this sale.');
+    } finally {
+      setSavingSale(false);
+    }
+  };
 
   return (
     <div className="flex flex-col lg:flex-row lg:h-screen w-full bg-bg text-text font-sans lg:overflow-hidden">
@@ -238,11 +260,21 @@ export default function Sale() {
               {total.toFixed(2)} DT
             </span>
           </div>
+          <label className="block mb-4 font-mono text-xs font-bold tracking-wider text-text-warm">
+            PAYMENT METHOD
+            <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} className="mt-2 w-full h-11 bg-surface-container border border-border-warm px-3 text-text">
+              <option value="Cash">Cash</option>
+              <option value="Card">Card</option>
+              <option value="Financing">Financing</option>
+            </select>
+          </label>
+          {checkoutError && <p className="mb-3 text-danger font-mono text-sm">{checkoutError}</p>}
           <button 
+            onClick={logSale}
             className="w-full bg-accent-light text-[#572000] font-black text-xl sm:text-[24px] uppercase h-16 sm:h-20 flex items-center justify-center gap-4 border-4 border-accent-light hover:bg-accent-container active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
-            disabled={cart.length === 0}
+            disabled={cart.length === 0 || savingSale}
           >
-            <ShoppingCart className="w-8 h-8" /> {t('sale.logSale')}
+            <ShoppingCart className="w-8 h-8" /> {savingSale ? 'SAVING…' : t('sale.logSale')}
           </button>
         </div>
       </div>

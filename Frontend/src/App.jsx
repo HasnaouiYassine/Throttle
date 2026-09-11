@@ -7,6 +7,7 @@ import History from './pages/History'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import { AuthProvider, useAuth } from './auth/AuthContext'
+import { AppDataProvider } from './data/AppDataContext'
 
 function RequireAuth({ children }) {
   const { isAuthed, checking } = useAuth()
@@ -28,8 +29,8 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route
             element={
-              <RequireAuth>
-                <Layout />
+            <RequireAuth>
+                <AppDataProvider><Layout /></AppDataProvider>
               </RequireAuth>
             }
           >

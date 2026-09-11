@@ -1,0 +1,102 @@
+{
+  "nextIds": {
+    "item": 2,
+    "supplier": 2,
+    "order": 2,
+    "sale": 3
+  },
+  "items": [
+    {
+      "id": 1,
+      "name": "Bougie",
+      "sku": "dd",
+      "category": "Electrical",
+      "price": 7,
+      "cost": 4.03,
+      "stock": 24,
+      "lowStockAt": 5,
+      "variant": "",
+      "size": "",
+      "color": "orange",
+      "barcode": "",
+      "image": "https://www.karhabtk.tn/15247-large_default/bougie-allum-kawazaki.jpg",
+      "createdAt": "2026-09-11T15:37:38.527Z",
+      "updatedAt": "2026-09-11T15:39:39.185Z"
+    }
+  ],
+  "suppliers": [
+    {
+      "id": 1,
+      "shortId": "SUP-001",
+      "name": "7elmi",
+      "contactPerson": "",
+      "phone": "56181989",
+      "terms": "Net 30",
+      "categories": [],
+      "createdAt": "2026-09-11T15:38:09.869Z",
+      "updatedAt": "2026-09-11T15:38:09.869Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "PO-00001",
+      "sequence": 1,
+      "supplierId": 1,
+      "supplierName": "7elmi",
+      "date": "2026-09-11",
+      "status": "Received",
+      "items": [
+        {
+          "itemId": 1,
+          "qty": 5,
+          "cost": 4.03
+        }
+      ],
+      "receivedAt": "2026-09-11T15:39:06.770Z",
+      "createdAt": "2026-09-11T15:39:00.954Z",
+      "updatedAt": "2026-09-11T15:39:06.770Z"
+    }
+  ],
+  "sales": [
+    {
+      "id": 1,
+      "txnId": "TXN-63109-5",
+      "timestamp": "2026-09-11T15:38:32.154Z",
+      "subtotal": 21,
+      "tax": 1.68,
+      "total": 22.68,
+      "paymentMethod": "Cash",
+      "paymentDetail": "",
+      "lines": [
+        {
+          "itemId": 1,
+          "qty": 3,
+          "price": 7,
+          "cost": 4,
+          "name": "Bougie",
+          "sku": "dd"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "txnId": "TXN-68536-5",
+      "timestamp": "2026-09-11T15:39:39.185Z",
+      "subtotal": 21,
+      "tax": 1.68,
+      "total": 22.68,
+      "paymentMethod": "Cash",
+      "paymentDetail": "",
+      "lines": [
+        {
+          "itemId": 1,
+          "qty": 3,
+          "price": 7,
+          "cost": 4.03,
+          "name": "Bougie",
+          "sku": "dd"
+        }
+      ]
+    }
+  ]
+}

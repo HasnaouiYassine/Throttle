@@ -1,154 +1,54 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Plus, Settings, Bell, Eye } from 'lucide-react';
-import { suppliers, purchaseOrders, items, getCategoryId } from '../data/mockData';
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { categories } from '../data/catalog'
+import { useAppData } from '../data/AppDataContext'
+import Modal from '../components/Modal'
+
+const emptySupplier = { name: '', contactPerson: '', phone: '', terms: 'Net 30', categories: [] }
+
+function SupplierForm({ supplier, onSave, onCancel }) {
+  const [form, setForm] = useState(supplier || emptySupplier)
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const change = (event) => setForm((state) => ({ ...state, [event.target.name]: event.target.value }))
+  const submit = async (event) => { event.preventDefault(); setSaving(true); setError(''); try { await onSave({ ...form, categories: form.categories || [] }) } catch (reason) { setError(reason.message.replaceAll('_', ' ')) } finally { setSaving(false) } }
+  const input = 'w-full h-11 bg-surface-container border border-border-warm px-3 focus:outline-none focus:border-accent'
+  return <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={submit}>
+    <label>Supplier name<input required className={input} name="name" value={form.name} onChange={change}/></label>
+    <label>Contact person<input className={input} name="contactPerson" value={form.contactPerson || ''} onChange={change}/></label>
+    <label>Phone<input className={input} name="phone" value={form.phone || ''} onChange={change}/></label>
+    <label>Payment terms<input className={input} name="terms" value={form.terms || ''} onChange={change}/></label>
+    <fieldset className="sm:col-span-2"><legend className="mb-2">Categories supplied</legend><div className="flex flex-wrap gap-3">{categories.map((category) => <label key={category.id} className="flex gap-1 items-center"><input type="checkbox" checked={(form.categories || []).includes(category.name)} onChange={(event) => setForm((state) => ({ ...state, categories: event.target.checked ? [...state.categories, category.name] : state.categories.filter((entry) => entry !== category.name) }))}/>{category.name}</label>)}</div></fieldset>
+    {error && <p className="sm:col-span-2 text-danger">{error}</p>}<div className="sm:col-span-2 flex justify-end gap-3"><button type="button" onClick={onCancel} className="h-11 px-4 border border-border-warm">Cancel</button><button disabled={saving} className="h-11 px-5 bg-accent text-white font-bold">{saving ? 'Saving…' : 'Save supplier'}</button></div>
+  </form>
+}
+
+function OrderForm({ suppliers, items, onSave, onCancel }) {
+  const [supplierId, setSupplierId] = useState(suppliers[0]?.id || '')
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [lines, setLines] = useState([{ itemId: items[0]?.id || '', qty: 1, cost: items[0]?.cost || 0 }])
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const changeLine = (index, field, value) => setLines((current) => current.map((line, lineIndex) => {
+    if (lineIndex !== index) return line
+    if (field === 'itemId') { const item = items.find((entry) => entry.id === Number(value)); return { ...line, itemId: Number(value), cost: item?.cost ?? line.cost } }
+    return { ...line, [field]: value }
+  }))
+  const submit = async (event) => { event.preventDefault(); setSaving(true); setError(''); try { await onSave({ supplierId: Number(supplierId), date, items: lines.map((line) => ({ itemId: Number(line.itemId), qty: Number(line.qty), cost: Number(line.cost) })) }) } catch (reason) { setError(reason.message.replaceAll('_', ' ')) } finally { setSaving(false) } }
+  const input = 'h-10 bg-surface-container border border-border-warm px-2 min-w-0'
+  return <form onSubmit={submit} className="space-y-4"><div className="grid sm:grid-cols-2 gap-4"><label>Supplier<select required className={`w-full ${input}`} value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>{suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}</select></label><label>Date<input required type="date" className={`w-full ${input}`} value={date} onChange={(e) => setDate(e.target.value)}/></label></div><div className="space-y-2">{lines.map((line, index) => <div key={index} className="grid grid-cols-[1fr_5rem_6rem_auto] gap-2"><select className={input} value={line.itemId} onChange={(e) => changeLine(index, 'itemId', e.target.value)}>{items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input className={input} type="number" min="1" value={line.qty} onChange={(e) => changeLine(index, 'qty', e.target.value)} title="Quantity"/><input className={input} type="number" min="0" step="0.01" value={line.cost} onChange={(e) => changeLine(index, 'cost', e.target.value)} title="Cost"/><button type="button" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))} className="text-danger disabled:opacity-40"><Trash2 size={18}/></button></div>)}</div><button type="button" onClick={() => setLines((current) => [...current, { itemId: items[0]?.id || '', qty: 1, cost: items[0]?.cost || 0 }])} className="border border-border-warm px-3 h-10 text-sm">+ Add line</button>{error && <p className="text-danger">{error}</p>}<div className="flex justify-end gap-3"><button type="button" onClick={onCancel} className="h-11 px-4 border border-border-warm">Cancel</button><button disabled={saving || !suppliers.length || !items.length} className="h-11 px-5 bg-accent text-white font-bold">{saving ? 'Saving…' : 'Create order'}</button></div></form>
+}
 
 export default function Suppliers() {
-  const { t } = useTranslation();
-
-  const getSupplierName = (supplierId) => {
-    const supplier = suppliers.find(s => s.id === supplierId);
-    return supplier ? supplier.name : t('suppliers.unknown');
-  };
-
-  const getStatusLabel = (status) => {
-    if (status === 'Pending') return t('suppliers.pending');
-    if (status === 'Received') return t('suppliers.received');
-    return status;
-  };
-
-  const getPoTotal = (po) => {
-    let total = 0;
-    po.items.forEach(poItem => {
-      if (poItem.cost !== undefined) {
-        total += poItem.quantity * poItem.cost;
-      } else {
-        const itemRef = items.find(i => i.id === poItem.itemId);
-        if (itemRef) {
-          total += poItem.quantity * (itemRef.cost || 0);
-        }
-      }
-    });
-    return total.toFixed(2);
-  };
-
-  return (
-    <div className="min-h-full bg-bg flex flex-col">
-      {/* Header Bar */}
-      <header className="bg-surface-container border-b-2 border-border-warm px-4 sm:px-6 py-2 flex justify-between items-center gap-2 sticky top-0 z-10 min-h-[3rem]">
-        <h1 className="font-sans text-xl sm:text-[32px] font-bold text-accent-light truncate">
-          {t('suppliers.title')}
-        </h1>
-        <div className="flex gap-2 sm:gap-4 shrink-0">
-          <button aria-label={t('a11y.settings')} className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center">
-            <Settings size={20} />
-          </button>
-          <button aria-label={t('a11y.notifications')} className="text-text-warm hover:text-accent-light flex items-center min-h-[48px] justify-center">
-            <Bell size={20} />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-4 sm:p-6 flex flex-col lg:flex-row gap-4 flex-1">
-        {/* Left Column */}
-        <div className="w-full lg:w-1/3 flex flex-col gap-4">
-          <div className="flex justify-between items-center gap-2">
-            <h2 className="font-sans text-xl sm:text-[24px] font-semibold leading-[32px] text-text">{t('suppliers.active')}</h2>
-            <button className="flex items-center gap-2 border-2 border-border-warm text-text h-12 px-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase hover:border-accent min-h-[48px] shrink-0">
-              <Plus size={16} /> {t('suppliers.new')}
-            </button>
-          </div>
-          
-          <div className="flex flex-col gap-4">
-            {suppliers.map(supplier => (
-              <div key={supplier.id} className="bg-surface-high border-2 border-border-warm p-4 hover:border-accent transition-colors cursor-pointer">
-                <div className="flex justify-between items-start gap-2 mb-2">
-                  <h3 className="font-sans text-[18px] font-bold text-accent-light min-w-0">{supplier.name}</h3>
-                  <span className="bg-surface-variant text-text-warm px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] border border-border-warm uppercase shrink-0">
-                    {supplier.shortId || supplier.id.substring(0,6)}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1 mb-4">
-                  <p className="font-mono text-[14px] text-text-warm">{t('suppliers.contact')}: {supplier.contactPerson}</p>
-                  <p className="font-mono text-[14px] text-text-warm">{t('suppliers.phone')}: {supplier.phone}</p>
-                  <p className="font-mono text-[14px] text-text-warm">{t('suppliers.terms')}: {supplier.terms}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {supplier.categories && supplier.categories.map((category, index) => (
-                    <span 
-                      key={category} 
-                      className={
-                        index === 0 
-                        ? "bg-accent-container text-[#572000] px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] uppercase" 
-                        : "bg-surface-variant text-text-warm px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] uppercase"
-                      }
-                    >
-                      {t(`categories.${getCategoryId(category)}`, { defaultValue: category })}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="w-full lg:w-2/3 flex flex-col gap-4 min-w-0">
-          <div className="bg-surface-container border-2 border-border-warm p-4 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
-            <div>
-              <h2 className="font-sans text-xl sm:text-[24px] font-semibold leading-[32px] text-text">{t('suppliers.orders')}</h2>
-              <p className="font-mono text-[14px] text-text-warm">{t('suppliers.ordersSubtitle')}</p>
-            </div>
-            <button className="bg-accent-container text-[#572000] font-black text-[16px] sm:text-[18px] h-12 px-6 border-2 border-transparent uppercase hover:opacity-90 min-h-[48px] whitespace-nowrap">
-              {t('suppliers.newOrder')}
-            </button>
-          </div>
-
-          <div className="bg-surface-low border-2 border-border-warm overflow-x-auto">
-            <table className="w-full min-w-[680px] text-left rtl:text-right border-collapse">
-              <thead className="bg-surface-variant border-b-2 border-border-warm">
-                <tr>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">{t('suppliers.poNumber')}</th>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">{t('suppliers.supplier')}</th>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">{t('suppliers.date')}</th>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">{t('suppliers.totalCost')}</th>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text">{t('suppliers.status')}</th>
-                  <th className="p-4 font-mono text-[12px] font-bold tracking-[0.1em] uppercase text-text text-right rtl:text-left">{t('suppliers.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="font-mono text-[14px]">
-                {purchaseOrders.map((po) => (
-                  <tr key={po.id} className="border-b border-border-outline hover:bg-surface-high transition-colors">
-                    <td className={`p-4 font-bold ${po.status === 'Pending' ? 'text-accent-light' : 'text-text'}`}>
-                      {po.poNumber || po.id}
-                    </td>
-                    <td className="p-4 text-text">{getSupplierName(po.supplierId)}</td>
-                    <td className="p-4 text-text-warm">{po.date}</td>
-                    <td className="p-4 text-text">{getPoTotal(po)} DT</td>
-                    <td className="p-4">
-                      {po.status === 'Pending' ? (
-                        <span className="bg-accent-container text-[#572000] border border-accent px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] uppercase inline-block">
-                          {getStatusLabel(po.status)}
-                        </span>
-                      ) : (
-                        <span className="bg-surface-variant text-text-warm border border-border-warm px-2 py-1 font-mono text-[12px] font-bold tracking-[0.1em] uppercase inline-block">
-                          {getStatusLabel(po.status)}
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-4 text-right rtl:text-left flex justify-end">
-                      <button className="text-text-warm hover:text-accent-light p-2 inline-flex min-h-[48px] items-center justify-center">
-                        <Eye size={20} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+  const { t } = useTranslation()
+  const { suppliers, orders, items, createSupplier, updateSupplier, deleteSupplier, createOrder, updateOrderStatus, deleteOrder } = useAppData()
+  const [editing, setEditing] = useState(undefined)
+  const [creatingOrder, setCreatingOrder] = useState(false)
+  const [error, setError] = useState('')
+  const supplierName = (id, fallback) => suppliers.find((supplier) => supplier.id === id)?.name || fallback || t('suppliers.unknown')
+  const total = (order) => order.items.reduce((sum, line) => sum + line.qty * line.cost, 0)
+  const removeSupplier = async (supplier) => { if (!window.confirm(`Delete “${supplier.name}”?`)) return; try { await deleteSupplier(supplier.id) } catch { setError('Could not delete this supplier.') } }
+  const removeOrder = async (order) => { if (!window.confirm(`Delete ${order.id}?`)) return; try { await deleteOrder(order.id) } catch { setError('Could not delete this purchase order.') } }
+  return <div className="min-h-full bg-bg flex flex-col"><header className="bg-surface-container border-b-2 border-border-warm px-4 sm:px-6 py-3 flex justify-between items-center"><h1 className="text-xl sm:text-[32px] font-bold text-accent-light">{t('suppliers.title')}</h1></header><main className="p-4 sm:p-6 flex flex-col lg:flex-row gap-6 flex-1"><section className="w-full lg:w-1/3"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-semibold">{t('suppliers.active')}</h2><button onClick={() => setEditing(null)} className="flex items-center gap-2 border border-border-warm h-11 px-3 font-mono text-xs font-bold"><Plus size={16}/>{t('suppliers.new')}</button></div><div className="space-y-3">{suppliers.map((supplier) => <article key={supplier.id} className="bg-surface-high border-2 border-border-warm p-4"><div className="flex justify-between gap-2"><h3 className="font-bold text-accent-light">{supplier.name}</h3><span className="font-mono text-xs text-text-warm">{supplier.shortId}</span></div><p className="font-mono text-sm text-text-warm mt-3">{supplier.contactPerson || '—'} · {supplier.phone || '—'}</p><p className="font-mono text-sm text-text-warm">{supplier.terms || '—'}</p><div className="flex flex-wrap gap-1 mt-3">{supplier.categories.map((category) => <span key={category} className="bg-surface-variant px-2 py-1 text-xs">{category}</span>)}</div><div className="flex justify-end gap-3 mt-3"><button onClick={() => setEditing(supplier)} className="text-text-warm hover:text-accent"><Pencil size={16}/></button><button onClick={() => removeSupplier(supplier)} className="text-danger"><Trash2 size={16}/></button></div></article>)}{!suppliers.length && <p className="text-text-warm">No suppliers yet.</p>}</div></section><section className="w-full lg:w-2/3 min-w-0"><div className="bg-surface-container border-2 border-border-warm p-4 flex justify-between gap-3 items-center mb-4"><div><h2 className="text-xl font-semibold">{t('suppliers.orders')}</h2><p className="font-mono text-sm text-text-warm">{t('suppliers.ordersSubtitle')}</p></div><button onClick={() => setCreatingOrder(true)} disabled={!suppliers.length || !items.length} className="bg-accent-container text-[#572000] font-bold h-11 px-4 disabled:opacity-50">{t('suppliers.newOrder')}</button></div>{error && <p className="mb-3 p-3 border border-danger text-danger">{error}</p>}<div className="bg-surface border-2 border-border-warm overflow-x-auto"><table className="w-full min-w-[680px] text-left"><thead className="bg-surface-variant"><tr className="font-mono text-xs"><th className="p-4">PO #</th><th className="p-4">SUPPLIER</th><th className="p-4">DATE</th><th className="p-4">TOTAL</th><th className="p-4">STATUS</th><th className="p-4">ACTIONS</th></tr></thead><tbody>{orders.map((order) => <tr key={order.id} className="border-t border-border-warm"><td className="p-4 font-mono font-bold text-accent-light">{order.id}</td><td className="p-4">{supplierName(order.supplierId, order.supplierName)}</td><td className="p-4 font-mono">{order.date}</td><td className="p-4 font-mono">{total(order).toFixed(2)} DT</td><td className="p-4"><select value={order.status} disabled={order.status === 'Received'} onChange={async (e) => { try { await updateOrderStatus(order.id, e.target.value) } catch (reason) { setError(reason.message.replaceAll('_', ' ')) } }} className="bg-surface-container border border-border-warm px-2 py-1 disabled:opacity-70"><option>Pending</option><option>Received</option><option>Cancelled</option></select></td><td className="p-4"><button onClick={() => removeOrder(order)} className="text-danger"><Trash2 size={17}/></button></td></tr>)}{!orders.length && <tr><td colSpan="6" className="p-8 text-center text-text-warm">No purchase orders yet.</td></tr>}</tbody></table></div></section></main>{editing !== undefined && <Modal title={editing ? 'Edit supplier' : 'Add supplier'} onClose={() => setEditing(undefined)}><SupplierForm supplier={editing} onCancel={() => setEditing(undefined)} onSave={async (body) => { if (editing) await updateSupplier(editing.id, body); else await createSupplier(body); setEditing(undefined) }}/></Modal>}{creatingOrder && <Modal title="New purchase order" onClose={() => setCreatingOrder(false)}><OrderForm suppliers={suppliers} items={items} onCancel={() => setCreatingOrder(false)} onSave={async (body) => { await createOrder(body); setCreatingOrder(false) }}/></Modal>}</div>
 }
