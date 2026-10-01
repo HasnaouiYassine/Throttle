@@ -260,14 +260,6 @@ export default function Sale() {
               {total.toFixed(2)} DT
             </span>
           </div>
-          <label className="block mb-4 font-mono text-xs font-bold tracking-wider text-text-warm">
-            PAYMENT METHOD
-            <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} className="mt-2 w-full h-11 bg-surface-container border border-border-warm px-3 text-text">
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-              <option value="Financing">Financing</option>
-            </select>
-          </label>
           {checkoutError && <p className="mb-3 text-danger font-mono text-sm">{checkoutError}</p>}
           <button 
             onClick={logSale}

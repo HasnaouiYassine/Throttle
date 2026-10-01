@@ -1,5 +1,7 @@
 import { Router } from 'express'
-import { nextId, readStore, updateStore } from '../store.js'
+import Supplier from '../models/Supplier.js'
+import Order from '../models/Order.js'
+import { getNextId } from '../models/Counter.js'
 
 const router = Router()
 
@@ -22,15 +24,22 @@ function payload(body, partial = false) {
 }
 
 router.get('/', async (req, res, next) => {
-  try { res.json(await readStore((db) => db.suppliers)) } catch (error) { next(error) }
+  try {
+    const suppliers = await Supplier.find().lean()
+    res.json(suppliers.map((s) => { const { _id, __v, ...rest } = s; return rest }))
+  } catch (error) { next(error) }
 })
 
 router.post('/', async (req, res, next) => {
   try {
-    const supplier = await updateStore((db) => {
-      const created = { id: nextId(db, 'supplier'), shortId: `SUP-${String(db.nextIds.supplier - 1).padStart(3, '0')}`, ...payload(req.body || {}), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-      db.suppliers.push(created)
-      return created
+    const id = await getNextId('supplier')
+    const now = new Date().toISOString()
+    const supplier = await Supplier.create({
+      id,
+      shortId: `SUP-${String(id).padStart(3, '0')}`,
+      ...payload(req.body || {}),
+      createdAt: now,
+      updatedAt: now,
     })
     res.status(201).json(supplier)
   } catch (error) { next(error) }
@@ -38,30 +47,22 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const supplier = await updateStore((db) => {
-      const current = db.suppliers.find((entry) => entry.id === Number(req.params.id))
-      if (!current) throw new Error('NOT_FOUND')
-      Object.assign(current, payload(req.body || {}, true), { updatedAt: new Date().toISOString() })
-      return current
-    })
-    res.json(supplier)
+    const current = await Supplier.findOne({ id: Number(req.params.id) })
+    if (!current) throw new Error('NOT_FOUND')
+    Object.assign(current, payload(req.body || {}, true), { updatedAt: new Date().toISOString() })
+    await current.save()
+    res.json(current)
   } catch (error) { next(error) }
 })
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    await updateStore((db) => {
-      const id = Number(req.params.id)
-      const index = db.suppliers.findIndex((entry) => entry.id === id)
-      if (index < 0) throw new Error('NOT_FOUND')
-      const supplier = db.suppliers[index]
-      // Keep purchase-order history readable after a supplier is removed.
-      for (const order of db.orders.filter((entry) => entry.supplierId === id)) {
-        order.supplierId = null
-        order.supplierName = supplier.name
-      }
-      db.suppliers.splice(index, 1)
-    })
+    const id = Number(req.params.id)
+    const supplier = await Supplier.findOne({ id })
+    if (!supplier) throw new Error('NOT_FOUND')
+    // Keep purchase-order history readable after a supplier is removed.
+    await Order.updateMany({ supplierId: id }, { $set: { supplierId: null, supplierName: supplier.name } })
+    await Supplier.deleteOne({ id })
     res.status(204).end()
   } catch (error) { next(error) }
 })

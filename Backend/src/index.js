@@ -1,13 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import { config } from './config.js'
+import { connectDB } from './db.js'
 import authRoutes from './routes/auth.js'
 import itemRoutes from './routes/items.js'
 import supplierRoutes from './routes/suppliers.js'
 import orderRoutes from './routes/orders.js'
 import saleRoutes from './routes/sales.js'
 import dashboardRoutes from './routes/dashboard.js'
-import { loadStore } from './store.js'
 import { requireAuth } from './middleware/requireAuth.js'
 
 const app = express()
@@ -30,6 +30,6 @@ app.use((error, req, res, next) => {
   res.status(status).json({ error: code })
 })
 
-loadStore()
+connectDB()
   .then(() => app.listen(config.port, () => console.log(`[throttle-backend] listening on http://localhost:${config.port}`)))
-  .catch((error) => { console.error('[throttle-backend] failed to load data store', error); process.exit(1) })
+  .catch((error) => { console.error('[throttle-backend] failed to connect to database', error); process.exit(1) })

@@ -1,5 +1,7 @@
 import { Router } from 'express'
-import { nextId, readStore, updateStore } from '../store.js'
+import Item from '../models/Item.js'
+import Order from '../models/Order.js'
+import { getNextId } from '../models/Counter.js'
 
 const router = Router()
 const categories = ['Engine', 'Brakes', 'Drive & Chain', 'Electrical', 'Suspension', 'Tires & Wheels', 'Filters & Fluids']
@@ -37,18 +39,20 @@ function itemPayload(body, { partial = false } = {}) {
 }
 
 router.get('/', async (req, res, next) => {
-  try { res.json(await readStore((db) => db.items)) } catch (error) { next(error) }
+  try {
+    const items = await Item.find().lean()
+    res.json(items.map((item) => { const { _id, __v, ...rest } = item; return rest }))
+  } catch (error) { next(error) }
 })
 
 router.post('/', async (req, res, next) => {
   try {
     const payload = itemPayload(req.body || {})
-    const item = await updateStore((db) => {
-      if (db.items.some((entry) => entry.sku.toLowerCase() === payload.sku.toLowerCase())) throw new Error('DUPLICATE_SKU')
-      const created = { id: nextId(db, 'item'), ...payload, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-      db.items.push(created)
-      return created
-    })
+    const existing = await Item.findOne({ sku: { $regex: new RegExp(`^${payload.sku}$`, 'i') } })
+    if (existing) throw new Error('DUPLICATE_SKU')
+    const id = await getNextId('item')
+    const now = new Date().toISOString()
+    const item = await Item.create({ id, ...payload, createdAt: now, updatedAt: now })
     res.status(201).json(item)
   } catch (error) { next(error) }
 })
@@ -56,25 +60,26 @@ router.post('/', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   try {
     const payload = itemPayload(req.body || {}, { partial: true })
-    const item = await updateStore((db) => {
-      const current = db.items.find((entry) => entry.id === Number(req.params.id))
-      if (!current) throw new Error('NOT_FOUND')
-      if (payload.sku && db.items.some((entry) => entry.id !== current.id && entry.sku.toLowerCase() === payload.sku.toLowerCase())) throw new Error('DUPLICATE_SKU')
-      Object.assign(current, payload, { updatedAt: new Date().toISOString() })
-      return current
-    })
-    res.json(item)
+    const current = await Item.findOne({ id: Number(req.params.id) })
+    if (!current) throw new Error('NOT_FOUND')
+    if (payload.sku) {
+      const duplicate = await Item.findOne({ id: { $ne: current.id }, sku: { $regex: new RegExp(`^${payload.sku}$`, 'i') } })
+      if (duplicate) throw new Error('DUPLICATE_SKU')
+    }
+    Object.assign(current, payload, { updatedAt: new Date().toISOString() })
+    await current.save()
+    res.json(current)
   } catch (error) { next(error) }
 })
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    await updateStore((db) => {
-      const index = db.items.findIndex((entry) => entry.id === Number(req.params.id))
-      if (index < 0) throw new Error('NOT_FOUND')
-      if (db.orders.some((order) => order.items.some((line) => line.itemId === Number(req.params.id)))) throw new Error('ITEM_HAS_ORDERS')
-      db.items.splice(index, 1)
-    })
+    const itemId = Number(req.params.id)
+    const item = await Item.findOne({ id: itemId })
+    if (!item) throw new Error('NOT_FOUND')
+    const hasOrders = await Order.findOne({ 'items.itemId': itemId })
+    if (hasOrders) throw new Error('ITEM_HAS_ORDERS')
+    await Item.deleteOne({ id: itemId })
     res.status(204).end()
   } catch (error) { next(error) }
 })

@@ -1,5 +1,8 @@
 import { Router } from 'express'
-import { nextId, readStore, updateStore } from '../store.js'
+import Order from '../models/Order.js'
+import Item from '../models/Item.js'
+import Supplier from '../models/Supplier.js'
+import { getNextId } from '../models/Counter.js'
 
 const router = Router()
 const statuses = ['Pending', 'Received', 'Cancelled']
@@ -16,7 +19,10 @@ function orderLines(body) {
 }
 
 router.get('/', async (req, res, next) => {
-  try { res.json(await readStore((db) => db.orders)) } catch (error) { next(error) }
+  try {
+    const orders = await Order.find().lean()
+    res.json(orders.map((o) => { const { _id, __v, ...rest } = o; return rest }))
+  } catch (error) { next(error) }
 })
 
 router.post('/', async (req, res, next) => {
@@ -27,63 +33,75 @@ router.post('/', async (req, res, next) => {
     const status = body.status || 'Pending'
     if (!Number.isInteger(supplierId) || !statuses.includes(status)) throw new Error('INVALID_ORDER')
     const items = orderLines(body)
-    const order = await updateStore((db) => {
-      if (!db.suppliers.some((supplier) => supplier.id === supplierId)) throw new Error('SUPPLIER_NOT_FOUND')
-      if (items.some((line) => !db.items.some((item) => item.id === line.itemId))) throw new Error('ITEM_NOT_FOUND')
-      const id = nextId(db, 'order')
-      const supplier = db.suppliers.find((entry) => entry.id === supplierId)
-      const created = { id: `PO-${String(id).padStart(5, '0')}`, sequence: id, supplierId, supplierName: supplier.name, date, status, items, receivedAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-      if (status === 'Received') {
-        for (const line of items) {
-          const item = db.items.find((entry) => entry.id === line.itemId)
-          item.stock += line.qty
-          item.cost = line.cost
-        }
-        created.receivedAt = new Date().toISOString()
+
+    const supplier = await Supplier.findOne({ id: supplierId })
+    if (!supplier) throw new Error('SUPPLIER_NOT_FOUND')
+    for (const line of items) {
+      const item = await Item.findOne({ id: line.itemId })
+      if (!item) throw new Error('ITEM_NOT_FOUND')
+    }
+
+    const seq = await getNextId('order')
+    const now = new Date().toISOString()
+    const orderData = {
+      id: `PO-${String(seq).padStart(5, '0')}`,
+      sequence: seq,
+      supplierId,
+      supplierName: supplier.name,
+      date,
+      status,
+      items,
+      receivedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    if (status === 'Received') {
+      for (const line of items) {
+        await Item.findOneAndUpdate({ id: line.itemId }, { $inc: { stock: line.qty }, $set: { cost: line.cost } })
       }
-      db.orders.push(created)
-      return created
-    })
+      orderData.receivedAt = now
+    }
+
+    const order = await Order.create(orderData)
     res.status(201).json(order)
   } catch (error) { next(error) }
 })
 
-// Purchase order updates deliberately only allow status changes. This prevents
-// receiving a different quantity than the one that was approved on the order.
+// Purchase order updates deliberately only allow status changes.
 router.patch('/:id', async (req, res, next) => {
   try {
     const status = req.body?.status
     if (!statuses.includes(status)) throw new Error('INVALID_STATUS')
-    const order = await updateStore((db) => {
-      const current = db.orders.find((entry) => entry.id === req.params.id)
-      if (!current) throw new Error('NOT_FOUND')
-      if (current.status === status) return current
-      if (current.status === 'Received') throw new Error('RECEIVED_ORDER_LOCKED')
-      if (status === 'Received') {
-        for (const line of current.items) {
-          const item = db.items.find((entry) => entry.id === line.itemId)
-          if (!item) throw new Error('ITEM_NOT_FOUND')
-          item.stock += line.qty
-          item.cost = line.cost
-          item.updatedAt = new Date().toISOString()
-        }
-        current.receivedAt = new Date().toISOString()
+
+    const current = await Order.findOne({ id: req.params.id })
+    if (!current) throw new Error('NOT_FOUND')
+    if (current.status === status) return res.json(current)
+    if (current.status === 'Received') throw new Error('RECEIVED_ORDER_LOCKED')
+
+    if (status === 'Received') {
+      for (const line of current.items) {
+        const item = await Item.findOne({ id: line.itemId })
+        if (!item) throw new Error('ITEM_NOT_FOUND')
+        item.stock += line.qty
+        item.cost = line.cost
+        item.updatedAt = new Date().toISOString()
+        await item.save()
       }
-      current.status = status
-      current.updatedAt = new Date().toISOString()
-      return current
-    })
-    res.json(order)
+      current.receivedAt = new Date().toISOString()
+    }
+
+    current.status = status
+    current.updatedAt = new Date().toISOString()
+    await current.save()
+    res.json(current)
   } catch (error) { next(error) }
 })
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    await updateStore((db) => {
-      const index = db.orders.findIndex((entry) => entry.id === req.params.id)
-      if (index < 0) throw new Error('NOT_FOUND')
-      db.orders.splice(index, 1)
-    })
+    const result = await Order.deleteOne({ id: req.params.id })
+    if (result.deletedCount === 0) throw new Error('NOT_FOUND')
     res.status(204).end()
   } catch (error) { next(error) }
 })
