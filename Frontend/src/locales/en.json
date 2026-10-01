@@ -44,7 +44,11 @@
     "prev": "PREV",
     "next": "NEXT",
     "showingItems": "Showing 1 - {{shown}} of {{total}} Items",
-    "showingRecords": "Showing 1-{{shown}} of {{total}} records"
+    "showingRecords": "Showing 1-{{shown}} of {{total}} records",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "DEL"
   },
   "categories": {
     "engine": "Engine",
@@ -83,7 +87,26 @@
     "acts": "ACTS",
     "sizeShort": "Sz",
     "colorShort": "Col",
-    "empty": "NO ITEMS FOUND MATCHING YOUR FILTERS."
+    "empty": "NO ITEMS FOUND MATCHING YOUR FILTERS.",
+    "addTitle": "Add inventory item",
+    "editTitle": "Edit item",
+    "deleteConfirm": "Delete “{{name}}”?",
+    "deleteError": "This item is referenced by a purchase order and cannot be deleted.",
+    "loading": "Loading inventory…",
+    "form": {
+      "name": "Item name",
+      "sku": "SKU",
+      "category": "Category",
+      "price": "Sale price (DT)",
+      "cost": "Cost (DT)",
+      "stock": "Quantity",
+      "lowStockAt": "Low-stock level",
+      "size": "Size",
+      "color": "Color",
+      "barcode": "Barcode",
+      "image": "Image URL/path (optional)",
+      "saveItem": "Save item"
+    }
   },
   "suppliers": {
     "title": "Suppliers & Purchase Orders",

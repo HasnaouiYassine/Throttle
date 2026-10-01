@@ -44,7 +44,11 @@
     "prev": "PRÉC",
     "next": "SUIV",
     "showingItems": "Affichage 1 - {{shown}} sur {{total}} articles",
-    "showingRecords": "Affichage 1-{{shown}} sur {{total}} enregistrements"
+    "showingRecords": "Affichage 1-{{shown}} sur {{total}} enregistrements",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "delete": "SUPPR"
   },
   "categories": {
     "engine": "Moteur",
@@ -83,7 +87,26 @@
     "acts": "ACT.",
     "sizeShort": "T",
     "colorShort": "Coul",
-    "empty": "AUCUN ARTICLE TROUVÉ."
+    "empty": "AUCUN ARTICLE TROUVÉ.",
+    "addTitle": "Ajouter un article",
+    "editTitle": "Modifier l'article",
+    "deleteConfirm": "Supprimer « {{name}} » ?",
+    "deleteError": "Cet article est lié à un bon de commande et ne peut pas être supprimé.",
+    "loading": "Chargement de l'inventaire…",
+    "form": {
+      "name": "Nom de l'article",
+      "sku": "SKU",
+      "category": "Catégorie",
+      "price": "Prix de vente (DT)",
+      "cost": "Coût (DT)",
+      "stock": "Quantité",
+      "lowStockAt": "Niveau de stock faible",
+      "size": "Taille",
+      "color": "Couleur",
+      "barcode": "Code-barres",
+      "image": "URL / chemin de l'image (optionnel)",
+      "saveItem": "Enregistrer l'article"
+    }
   },
   "suppliers": {
     "title": "Fournisseurs & Bons de commande",

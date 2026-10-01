@@ -44,7 +44,11 @@
     "prev": "السابق",
     "next": "التالي",
     "showingItems": "عرض 1 - {{shown}} من {{total}} صنف",
-    "showingRecords": "عرض 1-{{shown}} من {{total}} سجل"
+    "showingRecords": "عرض 1-{{shown}} من {{total}} سجل",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "delete": "حذف"
   },
   "categories": {
     "engine": "المحرك",
@@ -83,7 +87,26 @@
     "acts": "إجراء",
     "sizeShort": "مقاس",
     "colorShort": "لون",
-    "empty": "لا توجد أصناف مطابقة."
+    "empty": "لا توجد أصناف مطابقة.",
+    "addTitle": "إضافة صنف إلى المخزون",
+    "editTitle": "تعديل الصنف",
+    "deleteConfirm": "هل تريد حذف «{{name}}»؟",
+    "deleteError": "هذا الصنف مرتبط بأمر شراء ولا يمكن حذفه.",
+    "loading": "جارٍ تحميل المخزون…",
+    "form": {
+      "name": "اسم الصنف",
+      "sku": "رمز الصنف (SKU)",
+      "category": "الفئة",
+      "price": "سعر البيع (د.ت)",
+      "cost": "التكلفة (د.ت)",
+      "stock": "الكمية",
+      "lowStockAt": "مستوى انخفاض المخزون",
+      "size": "المقاس",
+      "color": "اللون",
+      "barcode": "الباركود",
+      "image": "رابط/مسار الصورة (اختياري)",
+      "saveItem": "حفظ الصنف"
+    }
   },
   "suppliers": {
     "title": "المورّدون وأوامر الشراء",
